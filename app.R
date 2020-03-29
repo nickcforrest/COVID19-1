@@ -12,6 +12,7 @@ library(shiny)
 library(ggplot2)
 library(geosphere)
 library(scales)
+library(googleVis)
 
 #Define Variables and load in data up front if necessary
 CovidConfirmedCases <- read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv")
@@ -266,11 +267,28 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius){
         ggtitle("COVID-19 Impact", subtitle = "Local Area") +
         theme(text = element_text(size = 15)) +
         labs(color='Legend')
-    
-    
-    
-    
 }
+
+# CovidCountyChoropleth<-function(ChosenBase, Radius){
+# 
+#     #Finds which counties in given radius. Also Give county statistics
+#     BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
+#     for (i in 1:3143) {
+#         CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+#     }
+#     IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
+#     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+#     
+#     
+# 
+#     
+# 
+#     
+#     
+#     
+#     
+# }
+
 
 
 ##########################################
