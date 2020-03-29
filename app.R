@@ -71,15 +71,15 @@ ui <- tagList(
                                          value = 25),
                              br(),
                              menuItem(
-                                 "Extra Projection Inputs",
+                                 "Extra Inputs",
                                  tabName = "dashboard",
                                  icon = icon("sliders-h"),
                                  div(id = "single", style="display: none;", numericInput("tckt", "Ticket Number : ", 12345,  width = 300)),
                                  sliderInput("proj_days",
-                                             "How far into the future? (Weeks):",
-                                             min = 1,
-                                             max = 12,
-                                             value = 2),
+                                             "Projection days:",
+                                             min = 7,
+                                             max = 90,
+                                             value = 14),
                                  sliderInput("social_dist",
                                              "% Social distancing in your area:",
                                              min = 0,
@@ -91,80 +91,78 @@ ui <- tagList(
                              hr()
                          )
         ),
-    
-    dashboardBody(
-        tags$head(tags$style(HTML(
-            '.myClass { 
-      font-size: 20px;
-      line-height: 50px;
-      text-align: left;
-      font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-      padding: 0 15px;
-      overflow: hidden;
-      color: white;
-      }
-      '))),
-        tags$script(HTML('
-                     $(document).ready(function() {
-                     $("header").find("nav").append(\'<span class="myClass"> Tailored Risk Assesments </span>\');
-                     })
-                     ')),
-        fluidRow(
-            valueBox("LOW RISK", subtitle ="Mission Risk",color= "green",icon = icon("smile")),
-            valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow",icon = icon("meh")),
-            valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red",icon = icon("frown"))
-        ),
         
-        tabsetPanel(id = "tabs",
-                    ####### START OVERALL RISK TAB #######
-                    tabPanel(
-                        title = "Summary",
-                        htmlOutput("SummaryPlot")
-                        
-                    ),
-                    ####### END OVERALL RISK TAB #######
-                    ####### START MISSION RISK TAB #######
-                    tabPanel(
-                        title = "Mission",
-                        value = plotOutput("plot")
-                    ),
-                    ####### END MISSION RISK TAB #######
-                    ####### START INSTALLATION HEALTH RISK TAB #######
-                    tabPanel(
-                        title = "Installation Health", 
-                        fluidRow(
-                            # A static valueBox
-                            valueBoxOutput("TotalPopulation"),
-                            valueBox(2, subtitle ="Total Air Force Deaths", color= "red",icon = icon("skull")),
-                            valueBox("85%", subtitle = "Base MTF Burden", color = "teal", icon = icon("hospital"))
-                        ),
-                        box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
-                        fluidRow( 
-                            box(title = "Chart 1 Here", "Box content"),
-                            box(title = "Chart 2 Here", "Box content")
-                        )
-                    ),
-                    ####### END INSTALLATION HEALTH RISK TAB #######
-                    ####### START LOCAL HEALTH RISK TAB #######
-                    tabPanel(
-                        title = "Local Health",
-                        fluidRow(
-                            # A static valueBox
-                            valueBoxOutput("CovidCases"),
-                            valueBoxOutput("LocalCovidDeaths"),
-                            valueBoxOutput("HospitalUtilization")
-                        ),
-                        box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
-                        fluidRow( 
-                            box(title = "",plotOutput("LocalHealthPlot1")),
-                            box(title = "",plotOutput("LocalHealthPlot2"))
+        dashboardBody(
+            tags$head(tags$style(HTML(
+                '.myClass { 
+        font-size: 20px;
+        line-height: 50px;
+        text-align: left;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        padding: 0 15px;
+        overflow: hidden;
+        color: white;
+        }
+        '))),
+            tags$script(HTML('
+                       $(document).ready(function() {
+                       $("header").find("nav").append(\'<span class="myClass"> Tailored Risk Assesments </span>\');
+                       })
+                       ')),
+            fluidRow(
+                valueBox("LOW RISK", subtitle ="Mission Risk",color= "green",icon = icon("smile")),
+                valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow",icon = icon("meh")),
+                valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red",icon = icon("frown"))
+            ),
+            
+            tabsetPanel(id = "tabs",
+                        ####### START OVERALL RISK TAB #######
+                        tabPanel(
+                            title = "Summary",
+                            htmlOutput("SummaryPlot")
                             
+                        ),
+                        ####### END OVERALL RISK TAB #######
+                        ####### START MISSION RISK TAB #######
+                        tabPanel(
+                            title = "Mission",
+                            value = plotOutput("plot")
+                        ),
+                        ####### END MISSION RISK TAB #######
+                        ####### START INSTALLATION HEALTH RISK TAB #######
+                        tabPanel(
+                            title = "Installation Health", 
+                            fluidRow(
+                                # A static valueBox
+                                valueBoxOutput("TotalPopulation"),
+                                valueBox(2, subtitle ="Total Air Force Deaths", color= "red",icon = icon("skull")),
+                                valueBox("85%", subtitle = "Base MTF Burden", color = "teal", icon = icon("hospital"))
+                            ),
+                            box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
+                            fluidRow( 
+                                box(title = "Chart 1 Here", "Box content"),
+                                box(title = "Chart 2 Here", "Box content")
+                            )
+                        ),
+                        ####### END INSTALLATION HEALTH RISK TAB #######
+                        ####### START LOCAL HEALTH RISK TAB #######
+                        tabPanel(
+                            title = "Local Health",
+                            fluidRow(
+                                # A static valueBox
+                                valueBoxOutput("CovidCases"),
+                                valueBoxOutput("LocalCovidDeaths"),
+                                valueBoxOutput("HospitalUtilization")
+                            ),
+                            fluidRow( 
+                                box(title = "Daily Impact",plotOutput("LocalHealthPlot1")),
+                                box(title = "Total Impact",plotOutput("LocalHealthPlot2"))
+                            )
                         )
-                    )
-                    ####### END LOCAL HEALTH RISK TAB #######
+                        ####### END LOCAL HEALTH RISK TAB #######
+            )
         )
     )
-)
 )
 #Close UI  
 ###############################
@@ -225,7 +223,13 @@ HospitalIncreases<-function(ChosenBase, Radius){
     StillHospital<-ceiling((TotalHospital-NotHospital))
     Upper<-(signif((StillHospital/TotalBeds*.314+.6)*100,3))
     Lower<-(signif((StillHospital/TotalBeds*.207+.6)*100,3))
-    paste(Lower, Upper, sep = "-")
+    if(Upper-Lower >= 1){
+        Lower = round(Lower)
+        Upper = round(Upper)
+        paste(paste(Lower, Upper, sep = "-"),"%")} 
+    else {
+        paste(mean(Upper,Lower),"%")  
+    }
 }
 
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
@@ -270,13 +274,22 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius){
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
     
     #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
+    #plot for local area daily
     ggplot(Chart1DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
-        ggtitle("Daily COVID-19 Impact", subtitle = "Local Area") +
         theme(text = element_text(size = 15)) +
+        theme(plot.title = element_text(hjust = 0.5))+
         labs(color='')+
+        theme_bw()+
+        theme(
+            plot.background = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank()
+        ) +
+        theme(axis.line = element_line(color = "black"))+
         theme(legend.position = "top")
 }
 
@@ -300,7 +313,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius){
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     CumDailyCovid<-colSums(CovidCounties[5:length(CovidCounties)])
     CumHospitalizations<-ceiling(CumDailyCovid*.26)
-
+    
     
     
     #Find New Deaths
@@ -311,7 +324,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius){
     IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     CumDailyDeaths<-colSums(CovidCountiesDeath[5:ncol(CovidCountiesDeath)])
-
+    
     
     
     ForecastDate<- seq(as.Date("2020-01-22"), length=(length(CumDailyDeaths)), by="1 day")
@@ -320,13 +333,22 @@ CovidCasesCumChart<-function(ChosenBase, Radius){
     Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
     
     #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
+    #plot for local area cumulative
     ggplot(Chart2DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
-        ggtitle("Total COVID-19 Impact", subtitle = "Local Area") +
         theme(text = element_text(size = 15)) +
+        theme(plot.title = element_text(hjust = 0.5))+
         labs(color='')+
+        theme_bw()+
+        theme(
+            plot.background = element_blank()
+            ,panel.grid.major = element_blank()
+            ,panel.grid.minor = element_blank()
+            ,panel.border = element_blank()
+        ) +
+        theme(axis.line = element_line(color = "black"))+
         theme(legend.position = "top")
 }
 
@@ -357,7 +379,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius){
 # Define server logic, this is where all plots are generated. 
 server <- function(input, output) {
     
-
+    
     
     #Finds which counties in given radius. Also Give county statistics
     output$TotalPopulation <- renderValueBox({
@@ -392,7 +414,7 @@ server <- function(input, output) {
                  HospitalIncreases(input$Base,input$Radius),
                  icon = icon("hospital"),
                  color = "teal")
-        })
+    })
     
     #Create first plot of local health population 
     output$LocalHealthPlot1<-renderPlot({
@@ -406,32 +428,32 @@ server <- function(input, output) {
     
     #Create Plot on Summary page
     output$SummaryPlot<-renderGvis({
-    DF<-cbind.data.frame(CovidConfirmedCases$State, CovidConfirmedCases[,length(CovidConfirmedCases)])
-    colnames(DF)<-c("state","Value")
-    ChlorData<-plyr::ddply(DF, "state", numcolwise(sum))
-    
-    ChlorData<-ChlorData %>% 
-        mutate(state_name = state.name[match(state, state.abb)])
-    ChlorData<-ChlorData[complete.cases(ChlorData$state_name), ]
-    states <- data.frame(ChlorData$state_name, ChlorData$Value)
-    colnames(states)<-c("state_name","COVID-19 Cases")
-    
-            gvisGeoChart(states, "state_name", "COVID-19 Cases", 
-                              options=list(region="US", 
-                                           displayMode="regions", 
-                                           resolution="provinces",
-                                           width=900, height=700))
-    
+        DF<-cbind.data.frame(CovidConfirmedCases$State, CovidConfirmedCases[,length(CovidConfirmedCases)])
+        colnames(DF)<-c("state","Value")
+        ChlorData<-plyr::ddply(DF, "state", numcolwise(sum))
+        
+        ChlorData<-ChlorData %>% 
+            mutate(state_name = state.name[match(state, state.abb)])
+        ChlorData<-ChlorData[complete.cases(ChlorData$state_name), ]
+        states <- data.frame(ChlorData$state_name, ChlorData$Value)
+        colnames(states)<-c("state_name","COVID-19 Cases")
+        
+        gvisGeoChart(states, "state_name", "COVID-19 Cases", 
+                     options=list(region="US", 
+                                  displayMode="regions", 
+                                  resolution="provinces",
+                                  width=900, height=700))
+        
     })
     
-
+    
     # 
     # 
     # 
     # 
     # 
     #
-
+    
     
     observeEvent(input$inputInfo, {
         showModal(
