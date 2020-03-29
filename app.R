@@ -7,12 +7,21 @@
 #    http://shiny.rstudio.com/
 #
 #import
-library(shinydashboard)
-library(shiny)
-library(ggplot2)
-library(geosphere)
-library(scales)
-library(googleVis)
+pacman::p_load(dplyr,
+               ggplot2,
+               tidyverse,
+               tidyr,
+               shinydashboard,
+               shiny,
+               geosphere,
+               scales,
+               googleVis,
+               reshape2,
+               usmap,
+               data.table,
+               plyr
+)
+
 
 #Define Variables and load in data up front if necessary
 CovidConfirmedCases <- read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv")
@@ -147,8 +156,9 @@ ui <- tagList(
                         ),
                         box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
                         fluidRow( 
-                            plotOutput("LocalHealthPlot1"),
-                            box(title = "Chart 2 Here", "Box content")
+                            box(title = "",plotOutput("LocalHealthPlot1")),
+                            box(title = "",plotOutput("LocalHealthPlot2"))
+                            
                         )
                     )
                     ####### END LOCAL HEALTH RISK TAB #######
@@ -264,10 +274,62 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius){
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
-        ggtitle("COVID-19 Impact", subtitle = "Local Area") +
+        ggtitle("Daily COVID-19 Impact", subtitle = "Local Area") +
         theme(text = element_text(size = 15)) +
-        labs(color='Legend')
+        labs(color='')+
+        theme(legend.position = "top")
 }
+
+#Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
+CovidCasesCumChart<-function(ChosenBase, Radius){
+    #Finds number of hospitals in radius
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
+    for (i in 1:7581) {
+        HospitalInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
+    }
+    IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= Radius))
+    IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
+    TotalBeds<-sum(IncludedHospitals$BEDS)
+    
+    #Finds which counties in given radius. Also Give county statistics
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
+    for (i in 1:3143) {
+        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+    }
+    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
+    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+    CumDailyCovid<-colSums(CovidCounties[5:length(CovidCounties)])
+    CumHospitalizations<-ceiling(CumDailyCovid*.26)
+
+    
+    
+    #Find New Deaths
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
+    for (i in 1:3143) {
+        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+    }
+    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
+    CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
+    CumDailyDeaths<-colSums(CovidCountiesDeath[5:ncol(CovidCountiesDeath)])
+
+    
+    
+    ForecastDate<- seq(as.Date("2020-01-22"), length=(length(CumDailyDeaths)), by="1 day")
+    Chart2Data<-cbind.data.frame(ForecastDate,CumDailyCovid,CumHospitalizations,CumDailyDeaths)
+    colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Deaths")
+    Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
+    
+    #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
+    ggplot(Chart2DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
+        scale_colour_manual(values=c("Blue", "Orange", "Red"))+
+        xlab('Date') +
+        ylab('Number of People') +
+        ggtitle("Total COVID-19 Impact", subtitle = "Local Area") +
+        theme(text = element_text(size = 15)) +
+        labs(color='')+
+        theme(legend.position = "top")
+}
+
 
 # CovidCountyChoropleth<-function(ChosenBase, Radius){
 # 
@@ -335,6 +397,11 @@ server <- function(input, output) {
     #Create first plot of local health population 
     output$LocalHealthPlot1<-renderPlot({
         CovidCasesPerDayChart(input$Base, input$Radius)
+    })
+    
+    #Create second plot of local health population 
+    output$LocalHealthPlot2<-renderPlot({
+        CovidCasesCumChart(input$Base, input$Radius)
     })
     
     #Create Plot on Summary page
