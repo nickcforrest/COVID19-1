@@ -30,6 +30,7 @@ BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
 HospitalList <- HospitalInfo$NAME
 CountyList <- CountyInfo$County
 
+
 #Build UI
 ui <- tagList(
     dashboardPage(
@@ -107,7 +108,8 @@ ui <- tagList(
         tabsetPanel(id = "tabs",
                     ####### START OVERALL RISK TAB #######
                     tabPanel(
-                        title = "Summary", 
+                        title = "Summary",
+                        htmlOutput("SummaryPlot")
                         
                     ),
                     ####### END OVERALL RISK TAB #######
@@ -315,6 +317,26 @@ server <- function(input, output) {
     #Create first plot of local health population 
     output$LocalHealthPlot1<-renderPlot({
         CovidCasesPerDayChart(input$Base, input$Radius)
+    })
+    
+    #Create Plot on Summary page
+    output$SummaryPlot<-renderGvis({
+    DF<-cbind.data.frame(CovidConfirmedCases$State, CovidConfirmedCases[,length(CovidConfirmedCases)])
+    colnames(DF)<-c("state","Value")
+    ChlorData<-plyr::ddply(DF, "state", numcolwise(sum))
+    
+    ChlorData<-ChlorData %>% 
+        mutate(state_name = state.name[match(state, state.abb)])
+    ChlorData<-ChlorData[complete.cases(ChlorData$state_name), ]
+    states <- data.frame(ChlorData$state_name, ChlorData$Value)
+    colnames(states)<-c("state_name","COVID-19 Cases")
+    
+            gvisGeoChart(states, "state_name", "COVID-19 Cases", 
+                              options=list(region="US", 
+                                           displayMode="regions", 
+                                           resolution="provinces",
+                                           width=900, height=700))
+    
     })
     
 
