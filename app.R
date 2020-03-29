@@ -22,6 +22,8 @@
 #                plyr
 # )
 
+###################################################################################################################################################
+#Loads in all necessary packages for the shiny app
 library(dplyr)
 library(ggplot2)
 #library(tidyverse)
@@ -36,8 +38,13 @@ library(usmap)
 library(data.table)
 library(plyr)
 
-
-#Define Variables and load in data up front if necessary
+###################################################################################################################################################
+#Define Variables and load in data up front if necessary.
+#This data updates daily with CovidConfirmedCases and CovidDeaths. The CDC updates these numbers every day.
+#The static data (countyinfo, hospitalinfo, AFBaseLocations) is used to for lat and long coordinates to measure distance.
+#Hospital Data allows us to determine the bed capacity of all hospitals in the nation
+#AFBaseLocations provide names and coordinates of base.
+#CountyInfo is used to measure population of a county and coordinates.
 CovidConfirmedCases <- read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv")
 AFBaseLocations <- read.csv("https://gitlab.com/messer06/covid/-/raw/master/AFB_Locs.csv?inline=false")
 CountyInfo <- read.csv("https://gitlab.com/messer06/covid/-/raw/master/County_Info.csv?inline=false")
@@ -49,13 +56,11 @@ colnames(CovidDeaths)[1]<-"CountyFIPS"
 #CovidDeaths<-CovidDeaths[,-(Minus)]
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 
-# #Create list of hospitals, bases, and counties.
+# #Create list of hospitals, bases, and counties to reference in the shiny app input
 BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
-HospitalList <- HospitalInfo$NAME
-CountyList <- CountyInfo$County
 
-
-#Build UI
+###################################################################################################################################################
+#Build UI for the ShinyDashboard. This creates the layout of the dashboard depending on what inputs, dropdowns, tabs, and graphics you want.
 ui <- tagList(
     dashboardPage(
         dashboardHeader(title = "COVID-19 Risk Dashboard",
@@ -187,8 +192,12 @@ ui <- tagList(
               background-color: transparent;
               z-index: 1000;")
 )
-#Close UI  
-###############################
+#Close UI 
+
+###################################################################################################################################################
+#Next, between the UI and the server, we input any funcitons we wish to call throughout the analysis.
+
+#Calculate counties includes the base and radius the user chooses in the UI on the app. Included Cont
 CalculateCounties<-function(ChosenBase, Radius, IncludedCounties){
     #Finds which counties in given radius. Also Give county statistics
     TotalPopulation <-  sum(IncludedCounties$Population)
