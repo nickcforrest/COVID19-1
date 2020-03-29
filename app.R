@@ -155,57 +155,57 @@ ui <- tagList(
 )
 #Close UI  
 ###############################
-CalculateCounties<-function(BaseLocationData, ChosenBase, CountyData, Radius){
+CalculateCounties<-function(ChosenBase, Radius){
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(BaseLocationData, Base == ChosenBase)
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
     for (i in 1:3143) {
-        CountyData$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
     }
-    IncludedCounties<-dplyr::filter(CountyData, DistanceMiles <= Radius)
+    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     TotalPopulation <-  sum(IncludedCounties$Population)
     TotalPopulation
 }
 
 # Finds Covid Cases and statistics on covid per county
-CalculateCovid<-function(CovidData, BaseLocationData, ChosenBase, CountyData, Radius){
+CalculateCovid<-function(ChosenBase, Radius){
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(BaseLocationData, Base == ChosenBase)
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
     for (i in 1:3143) {
-        CountyData$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
     }
-    IncludedCounties<-dplyr::filter(CountyData, DistanceMiles <= Radius)
-    CovidCounties<-subset(CovidData, CountyFIPS %in% IncludedCounties$FIPS)
+    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
+    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     sum(CovidCounties[,ncol(CovidCounties)])
 }
 
-CalculateDeaths<-function(CovidDeathsData, BaseLocationData, ChosenBase, CountyData, Radius){
+CalculateDeaths<-function(ChosenBase, Radius){
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(BaseLocationData, Base == ChosenBase)
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
     for (i in 1:3143) {
-        CountyData$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
     }
-    IncludedCounties<-dplyr::filter(CountyData, DistanceMiles <= Radius)
-    CovidCountiesDeath<-subset(CovidDeathsData, CountyFIPS %in% IncludedCounties$FIPS)
+    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
+    CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     sum(CovidCountiesDeath[,ncol(CovidCountiesDeath)])
 }
 
-HospitalIncreases<-function(HospitalDataSet, BaseLocationDataSet, ChosenBase, Radius, CountyData, CovidData){
+HospitalIncreases<-function(ChosenBase, Radius){
     #Finds number of hospitals in radius
-    BaseStats<-dplyr::filter(BaseLocationDataSet, Base == ChosenBase)
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
     for (i in 1:7581) {
-        HospitalDataSet$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalDataSet$LONGITUDE[i], HospitalDataSet$LATITUDE[i]), fun = distHaversine)/1609.34)
+        HospitalInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
     }
-    IncludedHospitals<-dplyr::filter(HospitalDataSet, (DistanceMiles <= Radius))
+    IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= Radius))
     IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
     TotalBeds<-sum(IncludedHospitals$BEDS)
     
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(BaseLocationDataSet, Base == ChosenBase)
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
     for (i in 1:3143) {
-        CountyData$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyData$Longitude[i], CountyData$Latitude[i]), fun = distHaversine)/1609.34)
+        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
     }
-    IncludedCounties<-dplyr::filter(CountyData, DistanceMiles <= Radius)
-    CovidCounties<-subset(CovidData, CountyFIPS %in% IncludedCounties$FIPS)
+    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
+    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     n<-ncol(CovidCounties)-6
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
     NotHospital<-sum(CovidCounties[,n])
@@ -280,7 +280,7 @@ server <- function(input, output) {
     #Finds which counties in given radius. Also Give county statistics
     output$TotalPopulation <- renderValueBox({
         valueBox(subtitle = "Total Air Force Cases",
-                 comma(CalculateCounties(AFBaseLocations,input$Base, CountyInfo,input$Radius)),
+                 comma(CalculateCounties(input$Base,input$Radius)),
                  icon = icon("list-ol")
         )
         
@@ -289,7 +289,7 @@ server <- function(input, output) {
     # Finds Covid Cases and statistics on covid per county
     output$CovidCases <- renderValueBox({
         valueBox(subtitle = "Local Cases",
-                 comma(CalculateCovid(CovidConfirmedCases, AFBaseLocations,input$Base,CountyInfo,input$Radius)),
+                 comma(CalculateCovid(input$Base,input$Radius)),
                  icon = icon("list-ol")
         )
         
@@ -298,7 +298,7 @@ server <- function(input, output) {
     # Finds Covid Cases and statistics on covid per county
     output$LocalCovidDeaths <- renderValueBox({
         valueBox(subtitle = "Local Deaths",
-                 comma(CalculateDeaths(CovidDeaths, AFBaseLocations,input$Base,CountyInfo,input$Radius)),
+                 comma(CalculateDeaths(input$Base, input$Radius)),
                  icon = icon("skull"),
                  color = "red"
         )
@@ -307,7 +307,7 @@ server <- function(input, output) {
     #Finds hospital information within a given 100 mile radius. Calculates number of total hospital beds. Can compare to number of cases
     output$HospitalUtilization <- renderValueBox({
         valueBox(subtitle = "Local Hospital Utilization",
-                 HospitalIncreases(HospitalInfo, AFBaseLocations,input$Base,input$Radius, CountyInfo, CovidConfirmedCases),
+                 HospitalIncreases(input$Base,input$Radius),
                  icon = icon("hospital"),
                  color = "teal")
         })
