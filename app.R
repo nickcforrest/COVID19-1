@@ -7,20 +7,34 @@
 #    http://shiny.rstudio.com/
 #
 #import
-pacman::p_load(dplyr,
-               ggplot2,
-               tidyverse,
-               tidyr,
-               shinydashboard,
-               shiny,
-               geosphere,
-               scales,
-               googleVis,
-               reshape2,
-               usmap,
-               data.table,
-               plyr
-)
+# pacman::p_load(dplyr,
+#                ggplot2,
+#                tidyverse,
+#                tidyr,
+#                shinydashboard,
+#                shiny,
+#                geosphere,
+#                scales,
+#                googleVis,
+#                reshape2,
+#                usmap,
+#                data.table,
+#                plyr
+# )
+
+library(dplyr)
+library(ggplot2)
+#library(tidyverse)
+library(tidyr)
+library(shinydashboard)
+library(shiny)
+library(geosphere)
+library(scales)
+library(googleVis)
+#library(reshape2)
+library(usmap)
+library(data.table)
+library(plyr)
 
 
 #Define Variables and load in data up front if necessary
@@ -119,7 +133,7 @@ ui <- tagList(
                         ####### START OVERALL RISK TAB #######
                         tabPanel(
                             title = "Summary",
-                            htmlOutput("SummaryPlot")
+                            box(status = "primary", width = 13, solidHeader = T, htmlOutput("SummaryPlot"), align = "center")
                             
                         ),
                         ####### END OVERALL RISK TAB #######
@@ -135,8 +149,8 @@ ui <- tagList(
                             fluidRow(
                                 # A static valueBox
                                 valueBoxOutput("TotalPopulation"),
-                                valueBox(2, subtitle ="Total Air Force Deaths", color= "red",icon = icon("skull")),
-                                valueBox("85%", subtitle = "Base MTF Burden", color = "teal", icon = icon("hospital"))
+                                valueBox(2, subtitle ="Installation Specific Deaths", color= "red",icon = icon("skull")),
+                                valueBox("85%", subtitle = "Installation Medical Utilization", color = "teal", icon = icon("hospital"))
                             ),
                             box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
                             fluidRow( 
@@ -162,60 +176,43 @@ ui <- tagList(
                         ####### END LOCAL HEALTH RISK TAB #######
             )
         )
-    )
+    ),
+    tags$footer("created by the 4 AFITeers", align = "center", style = "
+              position:absolute;
+              bottom:50;
+              width:100%;
+              height:25px;   /* Height of the footer */
+              color: grey;
+              padding: 0px;
+              background-color: transparent;
+              z-index: 1000;")
 )
 #Close UI  
 ###############################
-CalculateCounties<-function(ChosenBase, Radius){
+CalculateCounties<-function(ChosenBase, Radius, IncludedCounties){
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     TotalPopulation <-  sum(IncludedCounties$Population)
     TotalPopulation
 }
 
 # Finds Covid Cases and statistics on covid per county
-CalculateCovid<-function(ChosenBase, Radius){
+CalculateCovid<-function(ChosenBase, Radius, IncludedCounties){
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     sum(CovidCounties[,ncol(CovidCounties)])
 }
 
-CalculateDeaths<-function(ChosenBase, Radius){
+CalculateDeaths<-function(ChosenBase, Radius, IncludedCounties){
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     sum(CovidCountiesDeath[,ncol(CovidCountiesDeath)])
 }
 
-HospitalIncreases<-function(ChosenBase, Radius){
+HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     #Finds number of hospitals in radius
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:7581) {
-        HospitalInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= Radius))
-    IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
     TotalBeds<-sum(IncludedHospitals$BEDS)
     
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     n<-ncol(CovidCounties)-6
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
@@ -233,24 +230,13 @@ HospitalIncreases<-function(ChosenBase, Radius){
 }
 
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
-CovidCasesPerDayChart<-function(ChosenBase, Radius){
+CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     #Finds number of hospitals in radius
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:7581) {
-        HospitalInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= Radius))
-    IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
     TotalBeds<-sum(IncludedHospitals$BEDS)
     
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-    VectDailyCovid<-colSums(CovidCounties[5:length(CovidCounties)])
+    VectDailyCovid<-colSums(CovidCounties[29:length(CovidCounties)])
     DailyNewCases<-VectDailyCovid[2:length(VectDailyCovid)]-VectDailyCovid[1:(length(VectDailyCovid)-1)]
     DailyNewCases
     DailyNewHospitalizations<-ceiling(DailyNewCases*.26)
@@ -258,17 +244,12 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius){
     
     
     #Find New Deaths
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
-    VectDailyDeaths<-colSums(CovidCountiesDeath[5:ncol(CovidCountiesDeath)])
+    VectDailyDeaths<-colSums(CovidCountiesDeath[29:ncol(CovidCountiesDeath)])
     DailyNewDeaths<-VectDailyDeaths[2:length(VectDailyDeaths)]-VectDailyDeaths[1:(length(VectDailyDeaths)-1)]
     
     
-    ForecastDate<- seq(as.Date("2020-01-22"), length=(length(DailyNewDeaths)), by="1 day")
+    ForecastDate<- seq(as.Date("2020-02-15"), length=(length(DailyNewDeaths)), by="1 day")
     Chart1Data<-cbind.data.frame(ForecastDate,DailyNewCases,DailyNewHospitalizations,DailyNewDeaths)
     colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Deaths")
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
@@ -294,40 +275,24 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius){
 }
 
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
-CovidCasesCumChart<-function(ChosenBase, Radius){
+CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     #Finds number of hospitals in radius
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:7581) {
-        HospitalInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= Radius))
-    IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
     TotalBeds<-sum(IncludedHospitals$BEDS)
     
     #Finds which counties in given radius. Also Give county statistics
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-    CumDailyCovid<-colSums(CovidCounties[5:length(CovidCounties)])
+    CumDailyCovid<-colSums(CovidCounties[29:length(CovidCounties)])
     CumHospitalizations<-ceiling(CumDailyCovid*.26)
     
     
     
     #Find New Deaths
-    BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-    for (i in 1:3143) {
-        CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-    }
-    IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
-    CumDailyDeaths<-colSums(CovidCountiesDeath[5:ncol(CovidCountiesDeath)])
+    CumDailyDeaths<-colSums(CovidCountiesDeath[29:ncol(CovidCountiesDeath)])
     
     
     
-    ForecastDate<- seq(as.Date("2020-01-22"), length=(length(CumDailyDeaths)), by="1 day")
+    ForecastDate<- seq(as.Date("2020-02-15"), length=(length(CumDailyDeaths)), by="1 day")
     Chart2Data<-cbind.data.frame(ForecastDate,CumDailyCovid,CumHospitalizations,CumDailyDeaths)
     colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Deaths")
     Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
@@ -379,12 +344,31 @@ CovidCasesCumChart<-function(ChosenBase, Radius){
 # Define server logic, this is where all plots are generated. 
 server <- function(input, output) {
     
+    GetCounties<-reactive({
+        BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
+        for (i in 1:3143) {
+            CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
+        }
+        IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= input$Radius)
+        IncludedCounties
+    })
     
+    GetHospitals<-reactive({
+        #Finds number of hospitals in radius
+        BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
+        for (i in 1:7581) {
+            HospitalInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
+        }
+        IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= input$Radius))
+        IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
+        IncludedHospitals
+    })
     
     #Finds which counties in given radius. Also Give county statistics
     output$TotalPopulation <- renderValueBox({
+        MyCounties<-GetCounties()
         valueBox(subtitle = "Total Air Force Cases",
-                 comma(CalculateCounties(input$Base,input$Radius)),
+                 comma(CalculateCounties(input$Base,input$Radius, MyCounties)),
                  icon = icon("list-ol")
         )
         
@@ -392,8 +376,9 @@ server <- function(input, output) {
     
     # Finds Covid Cases and statistics on covid per county
     output$CovidCases <- renderValueBox({
+        MyCounties<-GetCounties()
         valueBox(subtitle = "Local Cases",
-                 comma(CalculateCovid(input$Base,input$Radius)),
+                 comma(CalculateCovid(input$Base,input$Radius,MyCounties)),
                  icon = icon("list-ol")
         )
         
@@ -401,8 +386,9 @@ server <- function(input, output) {
     
     # Finds Covid Cases and statistics on covid per county
     output$LocalCovidDeaths <- renderValueBox({
+        MyCounties<-GetCounties()
         valueBox(subtitle = "Local Deaths",
-                 comma(CalculateDeaths(input$Base, input$Radius)),
+                 comma(CalculateDeaths(input$Base, input$Radius, MyCounties)),
                  icon = icon("skull"),
                  color = "red"
         )
@@ -410,20 +396,26 @@ server <- function(input, output) {
     
     #Finds hospital information within a given 100 mile radius. Calculates number of total hospital beds. Can compare to number of cases
     output$HospitalUtilization <- renderValueBox({
+        MyCounties<-GetCounties()
+        MyHospitals<-GetHospitals()
         valueBox(subtitle = "Local Hospital Utilization",
-                 HospitalIncreases(input$Base,input$Radius),
+                 HospitalIncreases(input$Base,input$Radius, MyCounties, MyHospitals),
                  icon = icon("hospital"),
                  color = "teal")
     })
     
     #Create first plot of local health population 
     output$LocalHealthPlot1<-renderPlot({
-        CovidCasesPerDayChart(input$Base, input$Radius)
+        MyCounties<-GetCounties()
+        MyHospitals<-GetHospitals()
+        CovidCasesPerDayChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
     #Create second plot of local health population 
     output$LocalHealthPlot2<-renderPlot({
-        CovidCasesCumChart(input$Base, input$Radius)
+        MyCounties<-GetCounties()
+        MyHospitals<-GetHospitals()
+        CovidCasesCumChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
     #Create Plot on Summary page
