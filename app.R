@@ -21,8 +21,8 @@ HospitalInfo <- read.csv("https://opendata.arcgis.com/datasets/6ac5e325468c4cb9b
 CovidDeaths<-read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv")
 colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 colnames(CovidDeaths)[1]<-"CountyFIPS"
-Minus<-ncol(CovidDeaths)
-CovidDeaths<-CovidDeaths[,-(Minus)]
+#Minus<-ncol(CovidDeaths)
+#CovidDeaths<-CovidDeaths[,-(Minus)]
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 
 # #Create list of hospitals, bases, and counties.
