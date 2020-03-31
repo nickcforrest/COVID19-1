@@ -7,44 +7,42 @@
 #    http://shiny.rstudio.com/
 #
 #import
-# pacman::p_load(dplyr,
-#                ggplot2,
-#                tidyverse,
-#                tidyr,
-#                shinydashboard,
-#                shiny,
-#                geosphere,
-#                scales,
-#                googleVis,
-#                reshape2,
-#                usmap,
-#                data.table,
-#                plyr
-# )
+pacman::p_load(dplyr,
+               ggplot2,
+               tidyverse,
+               tidyr,
+               shinydashboard,
+               shiny,
+               geosphere,
+               scales,
+               googleVis,
+               reshape2,
+               usmap,
+               data.table,
+               plyr,
+               choroplethr,
+               choroplethrMaps
+)
 
-###################################################################################################################################################
-#Loads in all necessary packages for the shiny app
-library(dplyr)
-library(ggplot2)
-#library(tidyverse)
-library(tidyr)
-library(shinydashboard)
-library(shiny)
-library(geosphere)
-library(scales)
-library(googleVis)
-#library(reshape2)
-library(usmap)
-library(data.table)
-library(plyr)
+# library(dplyr)
+# library(ggplot2)
+# #library(tidyverse)
+# library(tidyr)
+# library(shinydashboard)
+# library(shiny)
+# library(geosphere)
+# library(scales)
+# library(googleVis)
+# #library(reshape2)
+# library(usmap)
+# library(data.table)
+# library(plyr)
+# #library(choroplethr)
+# #library(choroplethrMaps)
 
-###################################################################################################################################################
-#Define Variables and load in data up front if necessary.
-#This data updates daily with CovidConfirmedCases and CovidDeaths. The CDC updates these numbers every day.
-#The static data (countyinfo, hospitalinfo, AFBaseLocations) is used to for lat and long coordinates to measure distance.
-#Hospital Data allows us to determine the bed capacity of all hospitals in the nation
-#AFBaseLocations provide names and coordinates of base.
-#CountyInfo is used to measure population of a county and coordinates.
+
+
+#Define Variables and load in data up front if necessary
 CovidConfirmedCases <- read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv")
 AFBaseLocations <- read.csv("https://gitlab.com/messer06/covid/-/raw/master/AFB_Locs.csv?inline=false")
 CountyInfo <- read.csv("https://gitlab.com/messer06/covid/-/raw/master/County_Info.csv?inline=false")
@@ -56,11 +54,31 @@ colnames(CovidDeaths)[1]<-"CountyFIPS"
 #CovidDeaths<-CovidDeaths[,-(Minus)]
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 
-# #Create list of hospitals, bases, and counties to reference in the shiny app input
-BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
+#Read in IHME data
+temp <- tempfile()
+download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
+filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
+                 format(as.Date(Sys.Date()), "%m"), "_",
+                 format(as.Date(Sys.Date()-1), "%d"),
+                 "/Hospitalization_all_locs.csv",
+                 sep = "")
+unzip(temp, files = filename)
+IHME_Model <- read.csv(filename)
+unlink(temp)
 
-###################################################################################################################################################
-#Build UI for the ShinyDashboard. This creates the layout of the dashboard depending on what inputs, dropdowns, tabs, and graphics you want.
+IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
+StateList <- data.frame(state.name, state.abb)
+IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
+names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
+
+
+# #Create list of hospitals, bases, and counties.
+BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
+HospitalList <- HospitalInfo$NAME
+CountyList <- CountyInfo$County
+
+
+#Build UI
 ui <- tagList(
     dashboardPage(
         dashboardHeader(title = "COVID-19 Risk Dashboard",
@@ -138,16 +156,24 @@ ui <- tagList(
                         ####### START OVERALL RISK TAB #######
                         tabPanel(
                             title = "Summary",
-                            box(status = "primary", width = 13, solidHeader = T, htmlOutput("SummaryPlot"), align = "center")
-                            
+                            fluidRow( 
+                                box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot")),
+                                box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
+                            ),
+                            fluidRow( 
+                                box(title = "National Stats ","insert stats here"),
+                                box(title = "Local Stats", "insert stats here")
+                            )
                         ),
                         ####### END OVERALL RISK TAB #######
+                        
                         ####### START MISSION RISK TAB #######
                         tabPanel(
                             title = "Mission",
                             value = plotOutput("plot")
                         ),
                         ####### END MISSION RISK TAB #######
+                        
                         ####### START INSTALLATION HEALTH RISK TAB #######
                         tabPanel(
                             title = "Installation Health", 
@@ -164,6 +190,7 @@ ui <- tagList(
                             )
                         ),
                         ####### END INSTALLATION HEALTH RISK TAB #######
+                        
                         ####### START LOCAL HEALTH RISK TAB #######
                         tabPanel(
                             title = "Local Health",
@@ -173,7 +200,13 @@ ui <- tagList(
                                 valueBoxOutput("LocalCovidDeaths"),
                                 valueBoxOutput("HospitalUtilization")
                             ),
+                            fluidRow(
+                                box("- new cases", background = "aqua", width = 4),
+                                box("_ new deaths", background = "red", width = 4),
+                                box("_ change in hospital utilization", background = "teal", width = 4)
+                            ),
                             fluidRow( 
+                                box(title = "Daily IHME",plotOutput("IHME_State_Hosp")),
                                 box(title = "Daily Impact",plotOutput("LocalHealthPlot1")),
                                 box(title = "Total Impact",plotOutput("LocalHealthPlot2"))
                             )
@@ -192,12 +225,8 @@ ui <- tagList(
               background-color: transparent;
               z-index: 1000;")
 )
-#Close UI 
-
-###################################################################################################################################################
-#Next, between the UI and the server, we input any funcitons we wish to call throughout the analysis.
-
-#Calculate counties includes the base and radius the user chooses in the UI on the app. Included Cont
+#Close UI  
+###############################
 CalculateCounties<-function(ChosenBase, Radius, IncludedCounties){
     #Finds which counties in given radius. Also Give county statistics
     TotalPopulation <-  sum(IncludedCounties$Population)
@@ -427,7 +456,7 @@ server <- function(input, output) {
         CovidCasesCumChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
-    #Create Plot on Summary page
+    #Create Country Plot on Summary page
     output$SummaryPlot<-renderGvis({
         DF<-cbind.data.frame(CovidConfirmedCases$State, CovidConfirmedCases[,length(CovidConfirmedCases)])
         colnames(DF)<-c("state","Value")
@@ -440,12 +469,46 @@ server <- function(input, output) {
         colnames(states)<-c("state_name","COVID-19 Cases")
         
         gvisGeoChart(states, "state_name", "COVID-19 Cases", 
-                     options=list(region="US", 
+                     options=list(region="US",
+                                  #colorAxis="{colors:'grey', 'red']}",
                                   displayMode="regions", 
                                   resolution="provinces",
-                                  width=900, height=700))
+                                  width=400))
         
     })
+    
+    #Create County Plot on Summary page
+    output$CountySummary<-renderPlot({
+        CovidConfirmedCases <- CovidConfirmedCases[!duplicated(CovidConfirmedCases[1]),]
+        countyMap_choro <- merge(CountyInfo,CovidConfirmedCases,by.x = "FIPS",by.y = names(CovidConfirmedCases)[1])
+        countyMap_choro$Total <- rowSums(countyMap_choro[,18:length(countyMap_choro)])
+        countyTotals <- countyMap_choro[,c("FIPS","Total")]
+        names(countyTotals)[1] <- "region"
+        names(countyTotals)[2] <- "value"
+        countyTotals[2413,1] <- 46113
+        MyCounties<-GetCounties()
+        nearby_counties <- MyCounties$FIPS
+        county_choropleth(countyTotals, num_colors = 1, county_zoom = nearby_counties)
+    })
+    
+    #Create IHME plot by State projected hospitalization 
+    output$IHME_State_Hosp<-renderPlot({
+        BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
+        
+        IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
+        
+        
+        ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
+            geom_line(linetype = "dashed", size = 1) +
+            geom_ribbon(alpha=0.3, fill = "tan3") + 
+            labs(x = "Date", y = "Projected Daily Hospitalizations") +
+            theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
+                  axis.text.x = element_text(angle = 60, hjust = 1)) +
+            scale_x_date(date_breaks = "2 week")
+        
+    })
+    
+   # ouput$NationalDataTable
     
     
     # 
