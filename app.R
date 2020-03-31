@@ -504,7 +504,16 @@ server <- function(input, output) {
             labs(x = "Date", y = "Projected Daily Hospitalizations") +
             theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
                   axis.text.x = element_text(angle = 60, hjust = 1)) +
-            scale_x_date(date_breaks = "2 week")
+            scale_x_date(date_breaks = "2 week")+
+          theme_bw()+  
+          theme(
+            plot.background = element_blank()
+            ,panel.grid.major = element_blank()
+            ,panel.grid.minor = element_blank()
+            ,panel.border = element_blank()
+          ) +
+          theme(axis.line = element_line(color = "black"))+
+          theme(legend.position = "top")
         
     })
     
