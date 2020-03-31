@@ -147,9 +147,9 @@ ui <- tagList(
                        })
                        ')),
             fluidRow(
-                valueBox("LOW RISK", subtitle ="Mission Risk",color= "green",icon = icon("smile")),
-                valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow",icon = icon("meh")),
-                valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red",icon = icon("frown"))
+                valueBox("LOW RISK", subtitle ="Mission Risk",color= "green"),
+                valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow"),
+                valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red")
             ),
             
             tabsetPanel(id = "tabs",
@@ -168,10 +168,10 @@ ui <- tagList(
                         ####### END OVERALL RISK TAB #######
                         
                         ####### START MISSION RISK TAB #######
-                        tabPanel(
-                            title = "Mission",
-                            value = plotOutput("plot")
-                        ),
+                        # tabPanel(
+                        #     title = "Mission",
+                        #     value = plotOutput("plot")
+                        # ),
                         ####### END MISSION RISK TAB #######
                         
                         ####### START INSTALLATION HEALTH RISK TAB #######
@@ -183,7 +183,7 @@ ui <- tagList(
                                 valueBox(2, subtitle ="Installation Specific Deaths", color= "red",icon = icon("skull")),
                                 valueBox("85%", subtitle = "Installation Medical Utilization", color = "teal", icon = icon("hospital"))
                             ),
-                            box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
+
                             fluidRow( 
                                 box(title = "Chart 1 Here", "Box content"),
                                 box(title = "Chart 2 Here", "Box content")
@@ -201,9 +201,9 @@ ui <- tagList(
                                 valueBoxOutput("HospitalUtilization")
                             ),
                             fluidRow(
-                                box("- new cases", background = "aqua", width = 4),
-                                box("_ new deaths", background = "red", width = 4),
-                                box("_ change in hospital utilization", background = "teal", width = 4)
+                                box("- new cases", background = "navy", width = 4),
+                                box("_ new deaths", background = "navy", width = 4),
+                                box("_ change in hospital utilization", background = "navy", width = 4)
                             ),
                             fluidRow( 
                                 box(title = "Daily IHME",plotOutput("IHME_State_Hosp")),
@@ -417,7 +417,8 @@ server <- function(input, output) {
         MyCounties<-GetCounties()
         valueBox(subtitle = "Local Cases",
                  comma(CalculateCovid(input$Base,input$Radius,MyCounties)),
-                 icon = icon("list-ol")
+                 icon = icon("list-ol"),
+                 color = "navy"
         )
         
     })
@@ -428,7 +429,7 @@ server <- function(input, output) {
         valueBox(subtitle = "Local Deaths",
                  comma(CalculateDeaths(input$Base, input$Radius, MyCounties)),
                  icon = icon("skull"),
-                 color = "red"
+                 color = "navy"
         )
     })
     
@@ -439,7 +440,7 @@ server <- function(input, output) {
         valueBox(subtitle = "Local Hospital Utilization",
                  HospitalIncreases(input$Base,input$Radius, MyCounties, MyHospitals),
                  icon = icon("hospital"),
-                 color = "teal")
+                 color = "navy")
     })
     
     #Create first plot of local health population 
@@ -473,7 +474,8 @@ server <- function(input, output) {
                                   #colorAxis="{colors:'grey', 'red']}",
                                   displayMode="regions", 
                                   resolution="provinces",
-                                  width=400))
+                                  width=600,
+                                  height = 400))
         
     })
     
