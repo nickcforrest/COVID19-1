@@ -161,8 +161,8 @@ ui <- tagList(
                                 box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
                             ),
                             fluidRow( 
-                                box(title = "National Stats ","insert stats here"),
-                                box(title = "Local Stats", "insert stats here")
+                                box(title = "National Stats ",DT::datatable(data.table(c(1,2,3,4),c(1,2,3,4)), rownames = FALSE, width = 50,options = list(dom = 't'))),
+                                box(title = "Local Stats",DT::datatable(data.table(c(1,2,3,4),c(1,2,3,4)), rownames = FALSE,width = 50,options = list(dom = 't')))
                             )
                         ),
                         ####### END OVERALL RISK TAB #######
