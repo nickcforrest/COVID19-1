@@ -508,7 +508,8 @@ server <- function(input, output) {
              x = "Date", 
              y = "Projected Daily Hospitalizations") +
       theme_bw() +
-      theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
+      theme(plot.title = element_text(face = "bold", size = 18, family = "sans"),
+            axis.title = element_text(face = "bold",size = 11,family = "sans"),
             axis.text.x = element_text(angle = 60, hjust = 1), 
             axis.line = element_line(color = "black"),
             legend.position = "top",
