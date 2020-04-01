@@ -201,7 +201,7 @@ ui <- tagList(
                     ),
                     fluidRow(
                       box(plotOutput("IHME_State_Hosp",height = 400)),
-                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
+                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 400))
                     ),
                     fluidRow(
                         box(title = "Local County Statistics", solidHeader=T, align = "left", DT::dataTableOutput("CountyDataTable1", width = 100))
@@ -526,9 +526,13 @@ server <- function(input, output) {
     names(countyTotals)[1] <- "region"
     names(countyTotals)[2] <- "value"
     countyTotals[2413,1] <- 46113
+    BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
     MyCounties<-GetCounties()
     nearby_counties <- MyCounties$FIPS
-    county_choropleth(countyTotals, num_colors = 1, county_zoom = nearby_counties)
+    county_choropleth(countyTotals, num_colors = 1, county_zoom = nearby_counties) +
+        geom_point(aes(x = BaseStats$Long, y = BaseStats$Lat, size = 4)) +
+        geom_text(aes(x = BaseStats$Long, y = BaseStats$Lat - 0.1, label = BaseStats$Base),
+                  size = 5)
   })
   
   #Create IHME plot by State projected hospitalization 
