@@ -57,9 +57,9 @@ HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 #Read in IHME data
 temp <- tempfile()
 download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
+filename = paste(format(as.Date(Sys.Date()-1), "%Y"), "_",
                  format(as.Date(Sys.Date()-1), "%m"), "_",
-                 format(as.Date(Sys.Date()-2), "%d"),
+                 format(as.Date(Sys.Date()-1), "%d"), ".1",
                  "/Hospitalization_all_locs.csv",
                  sep = "")
 unzip(temp, files = filename)
@@ -172,10 +172,12 @@ ui <- tagList(
                   ),
                   ####### END OVERALL RISK TAB #######
                   
-                  ####### START MISSION RISK TAB #######
+                  ####### START PROJECTIONS TAB #######
                   tabPanel(
-                    title = "Mission",
-                    value = plotOutput("plot")
+                    title = "Local Health Projections",
+                    fluidRow(
+                      box(plotOutput("IHME_State_Hosp",height = 300))
+                    )
                   ),
                   ####### END MISSION RISK TAB #######
                   
@@ -211,7 +213,6 @@ ui <- tagList(
                       valueBoxOutput("HospUtlzChange", width = 4)
                     ),
                     fluidRow( 
-                      box(plotOutput("IHME_State_Hosp",height = 300)),
                       box(title = "Daily New Cases",plotOutput("LocalHealthPlot1",height = 300)),
                       box(title = "Total Cases",plotOutput("LocalHealthPlot2",height = 300))
                     )
