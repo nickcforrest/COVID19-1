@@ -7,39 +7,39 @@
 #    http://shiny.rstudio.com/
 #
 #import
-pacman::p_load(dplyr,
-               ggplot2,
-               tidyverse,
-               tidyr,
-               shinydashboard,
-               shiny,
-               geosphere,
-               scales,
-               googleVis,
-               reshape2,
-               usmap,
-               data.table,
-               plyr,
-               choroplethr,
-               choroplethrMaps
-)
+# pacman::p_load(dplyr,
+#                ggplot2,
+#                tidyverse,
+#                tidyr,
+#                shinydashboard,
+#                shiny,
+#                geosphere,
+#                scales,
+#                googleVis,
+#                reshape2,
+#                usmap,
+#                data.table,
+#                plyr,
+#                choroplethr,
+#                choroplethrMaps
+# )
 
-# library(dplyr)
-# library(ggplot2)
-# #library(tidyverse)
-# library(tidyr)
-# library(shinydashboard)
-# library(shiny)
-# library(geosphere)
-# library(scales)
-# library(googleVis)
-# #library(reshape2)
-# library(usmap)
-# library(data.table)
-# library(plyr)
-# #library(choroplethr)
-# #library(choroplethrMaps)
-
+library(dplyr)
+library(ggplot2)
+#library(tidyverse)
+library(tidyr)
+library(shinydashboard)
+library(shiny)
+library(geosphere)
+library(scales)
+library(googleVis)
+#library(reshape2)
+library(usmap)
+library(data.table)
+library(plyr)
+#library(choroplethr)
+#library(choroplethrMaps)
+library(DT)
 
 
 #Define Variables and load in data up front if necessary
@@ -55,27 +55,47 @@ colnames(CovidDeaths)[1]<-"CountyFIPS"
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 
 #Read in IHME data
-temp <- tempfile()
-download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
-                 format(as.Date(Sys.Date()), "%m"), "_",
-                 format(as.Date(Sys.Date()-1), "%d"),
-                 "/Hospitalization_all_locs.csv",
-                 sep = "")
-unzip(temp, files = filename)
-IHME_Model <- read.csv(filename)
-unlink(temp)
-
-IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
-StateList <- data.frame(state.name, state.abb)
-IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
-names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
+# temp <- tempfile()
+# download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
+# filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
+#                  format(as.Date(Sys.Date()), "%m"), "_",
+#                  format(as.Date(Sys.Date()-1), "%d"),
+#                  "/Hospitalization_all_locs.csv",
+#                  sep = "")
+# unzip(temp, files = filename)
+# IHME_Model <- read.csv(filename)
+# unlink(temp)
+# 
+# IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
+# StateList <- data.frame(state.name, state.abb)
+# IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
+# names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
 
 
 # #Create list of hospitals, bases, and counties.
 BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
 HospitalList <- HospitalInfo$NAME
 CountyList <- CountyInfo$County
+
+NationalDataTable<-CovidConfirmedCases
+NationalDataTable$State<-as.factor(NationalDataTable$State)
+NationalDataTable<-NationalDataTable[,-c(1,2,4)]
+NationalDataTable<-aggregate(.~State, NationalDataTable, sum)
+RateofCovidChange<-rev(NationalDataTable)[c(1:7)]
+RateofCovidChange<-ceiling(rowSums(RateofCovidChange[1:6]-RateofCovidChange[2:7])/6)
+
+NationalDeathTable<-CovidDeaths
+NationalDeathTable$State<-as.factor(NationalDeathTable$State)
+NationalDeathTable<-NationalDeathTable[,-c(1,2,4)]
+NationalDeathTable<-aggregate(.~State, NationalDeathTable, sum)
+RateofDeathChange<-rev(NationalDeathTable)[c(1:7)]
+RateofDeathChange<-ceiling(rowSums(RateofDeathChange[1:6]-RateofDeathChange[2:7])/6)
+
+NationalDataTable<-data.frame(NationalDataTable$State, NationalDataTable[,length(NationalDataTable)],RateofCovidChange, NationalDeathTable[,length(NationalDeathTable)], RateofDeathChange)
+colnames(NationalDataTable)<-c("State","Total Cases","Average New Cases Per Day", "Total Deaths","Average New Deaths Per Day")
+
+
+
 
 
 #Build UI
@@ -161,7 +181,7 @@ ui <- tagList(
                                 box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
                             ),
                             fluidRow( 
-                                box(title = "National Stats ","insert stats here"),
+                                DT::dataTableOutput("NationalDataTable1", width = 45),
                                 box(title = "Local Stats", "insert stats here")
                             )
                         ),
@@ -371,7 +391,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
 #     
 # 
 #     
-#     
+#                    
 #     
 #     
 # }
@@ -491,33 +511,35 @@ server <- function(input, output) {
         county_choropleth(countyTotals, num_colors = 1, county_zoom = nearby_counties)
     })
     
-    #Create IHME plot by State projected hospitalization 
-    output$IHME_State_Hosp<-renderPlot({
-        BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
-        
-        IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
-        
-        
-        ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
-            geom_line(linetype = "dashed", size = 1) +
-            geom_ribbon(alpha=0.3, fill = "tan3") + 
-            labs(x = "Date", y = "Projected Daily Hospitalizations") +
-            theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
-                  axis.text.x = element_text(angle = 60, hjust = 1)) +
-            scale_x_date(date_breaks = "2 week")+
-          theme_bw()+  
-          theme(
-            plot.background = element_blank()
-            ,panel.grid.major = element_blank()
-            ,panel.grid.minor = element_blank()
-            ,panel.border = element_blank()
-          ) +
-          theme(axis.line = element_line(color = "black"))+
-          theme(legend.position = "top")
-        
-    })
+    # #Create IHME plot by State projected hospitalization 
+    # output$IHME_State_Hosp<-renderPlot({
+    #     BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
+    #     
+    #     IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
+    #     
+    #     
+    #     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
+    #         geom_line(linetype = "dashed", size = 1) +
+    #         geom_ribbon(alpha=0.3, fill = "tan3") + 
+    #         labs(x = "Date", y = "Projected Daily Hospitalizations") +
+    #         theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
+    #               axis.text.x = element_text(angle = 60, hjust = 1)) +
+    #         scale_x_date(date_breaks = "2 week")+
+    #       theme_bw()+  
+    #       theme(
+    #         plot.background = element_blank()
+    #         ,panel.grid.major = element_blank()
+    #         ,panel.grid.minor = element_blank()
+    #         ,panel.border = element_blank()
+    #       ) +
+    #       theme(axis.line = element_line(color = "black"))+
+    #       theme(legend.position = "top")
+    #     
+    # })
     
-   # ouput$NationalDataTable
+    output$NationalDataTable1<-DT::renderDataTable({data.frame(NationalDataTable)
+        NationalDataTable
+    })
     
     
     # 
