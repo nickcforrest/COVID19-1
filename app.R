@@ -7,38 +7,40 @@
 #    http://shiny.rstudio.com/
 # 
 #import
-pacman::p_load(dplyr,
-               ggplot2,
-               tidyverse,
-               tidyr,
-               shinydashboard,
-               shiny,
-               geosphere,
-               scales,
-               googleVis,
-               reshape2,
-               usmap,
-               data.table,
-               plyr,
-               choroplethr,
-               choroplethrMaps
-)
+# pacman::p_load(dplyr,
+#                ggplot2,
+#                tidyverse,
+#                tidyr,
+#                shinydashboard,
+#                shiny,
+#                geosphere,
+#                scales,
+#                googleVis,
+#                reshape2,
+#                usmap,
+#                data.table,
+#                plyr,
+#                choroplethr,
+#                choroplethrMaps,
+#                DT
+# )
 
-# library(dplyr)
-# library(ggplot2)
-# #library(tidyverse)
-# library(tidyr)
-# library(shinydashboard)
-# library(shiny)
-# library(geosphere)
-# library(scales)
-# library(googleVis)
-# #library(reshape2)
-# library(usmap)
-# library(data.table)
-# library(plyr)
-# #library(choroplethr)
-# #library(choroplethrMaps)
+library(dplyr)
+library(ggplot2)
+#library(tidyverse)
+library(tidyr)
+library(shinydashboard)
+library(shiny)
+library(geosphere)
+library(scales)
+library(googleVis)
+#library(reshape2)
+library(usmap)
+library(data.table)
+library(plyr)
+#library(choroplethr)
+#library(choroplethrMaps)
+library(DT)
 
 
 
@@ -76,6 +78,26 @@ names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
 BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
 HospitalList <- HospitalInfo$NAME
 CountyList <- CountyInfo$County
+
+#Create National Data table on summary page
+NationalDataTable<-CovidConfirmedCases
+NationalDataTable$State<-as.factor(NationalDataTable$State)
+NationalDataTable<-NationalDataTable[,-c(1,2,4)]
+NationalDataTable<-aggregate(.~State, NationalDataTable, sum)
+RateofCovidChange<-rev(NationalDataTable)[c(1:7)]
+RateofCovidChange<-ceiling(rowSums(RateofCovidChange[1:6]-RateofCovidChange[2:7])/6)
+
+NationalDeathTable<-CovidDeaths
+NationalDeathTable$State<-as.factor(NationalDeathTable$State)
+NationalDeathTable<-NationalDeathTable[,-c(1,2,4)]
+NationalDeathTable<-aggregate(.~State, NationalDeathTable, sum)
+RateofDeathChange<-rev(NationalDeathTable)[c(1:7)]
+RateofDeathChange<-ceiling(rowSums(RateofDeathChange[1:6]-RateofDeathChange[2:7])/6)
+
+NationalDataTable<-data.frame(NationalDataTable$State, NationalDataTable[,length(NationalDataTable)],RateofCovidChange, NationalDeathTable[,length(NationalDeathTable)], RateofDeathChange)
+colnames(NationalDataTable)<-c("State","Total Cases","Average New Cases Per Day", "Total Deaths","Average New Deaths Per Day")
+NationalDataTable$`Cases Per 1000 People`<-c(731449,4822023,2949131,6553255,38041430,5187582,3590347,633427,917092,19317568,9919945,1392313,3074186,1595728,12875255,6537334,2885905,4380415,4601893,6646144,5884563,1329192,9883360,5379139,6021988,2984926,1005141,9752073,699628,1855525,1320718,8864590,2085538,2758931,19570261,11544225,3814820,3899353,12763536,1050292,4723723,833354,6456243,26059203,2855287,8185867,626011,6897012,5726398,1855413,576412)
+NationalDataTable$`Cases Per 1000 People`<-round(NationalDataTable$`Cases Per 1000 People`/NationalDataTable$`Total Cases`)/1000
 
 
 #Build UI
@@ -166,8 +188,8 @@ ui <- tagList(
                       box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
                     ),
                     fluidRow( 
-                      box(title = "National Stats ","insert stats here"),
-                      box(title = "Local Stats", "insert stats here")
+                        box(title = "National Statistics", solidHeader=T, align = "left", DT::dataTableOutput("NationalDataTable1", width = 100)),
+                        box(title = "Local County Statistics", solidHeader=T, align = "left", DT::dataTableOutput("CountyDataTable1", width = 100))
                     )
                   ),
                   ####### END OVERALL RISK TAB #######
@@ -357,6 +379,16 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
     theme(legend.position = "top")
 }
 
+
+#Create Data Table for local statistics
+GetLocalDataTable<-function(IncludedCounties){
+    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+    DeathCounties<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
+    CountyDataTable<-cbind(IncludedCounties,rev(CovidCounties)[,1],rev(DeathCounties)[,1])
+    CountyDataTable<-data.frame(CountyDataTable$State,CountyDataTable$County,CountyDataTable$Population, rev(CountyDataTable)[,2], rev(CountyDataTable)[,1])
+    colnames(CountyDataTable)<-c("State","County","Population","Total Confirmed Cases","Total Deaths" )
+    CountyDataTable
+}
 
 # CovidCountyChoropleth<-function(ChosenBase, Radius){
 # 
@@ -583,7 +615,18 @@ server <- function(input, output) {
   })
   
   
-  # ouput$NationalDataTable
+  #Render National Data Table on summary page
+  output$NationalDataTable1<-DT::renderDataTable({data.frame(NationalDataTable)
+                            NationalDataTable
+                            
+  })
+  
+  output$CountyDataTable1<-DT::renderDataTable({
+      MyCounties<-GetCounties()
+      dt<-GetLocalDataTable(MyCounties)
+      dt<-DT::datatable(dt, rownames = FALSE, options = list(dom = 't',ordering = F))
+      dt
+  })
   
   
   # 
