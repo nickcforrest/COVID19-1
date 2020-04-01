@@ -211,7 +211,7 @@ ui <- tagList(
                       valueBoxOutput("HospUtlzChange", width = 4)
                     ),
                     fluidRow( 
-                      box(title = "IHME Hospitalization Projections",plotOutput("IHME_State_Hosp")),
+                      box(plotOutput("IHME_State_Hosp")),
                       box(title = "Daily New Cases",plotOutput("LocalHealthPlot1")),
                       box(title = "Total Cases",plotOutput("LocalHealthPlot2"))
                     )
@@ -503,9 +503,12 @@ server <- function(input, output) {
     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
       geom_line(linetype = "dashed", size = 1) +
       geom_ribbon(alpha=0.3, fill = "tan3") + 
-      labs(x = "Date", y = "Projected Daily Hospitalizations") +
+      labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), sep = ""), 
+           x = "Date", 
+           y = "Projected Daily Hospitalizations") +
       theme_bw() +
-      theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
+      theme(plot.title = element_text(face = "bold", size = 18, family = "sans"),
+            axis.title = element_text(face = "bold", size = 11, family = "sans"),
             axis.text.x = element_text(angle = 60, hjust = 1), 
             axis.line = element_line(color = "black"),
             legend.position = "top",
