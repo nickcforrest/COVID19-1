@@ -57,9 +57,9 @@ HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 #Read in IHME data
 temp <- tempfile()
 download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
+filename = paste(format(as.Date(Sys.Date()-1), "%Y"), "_",
                  format(as.Date(Sys.Date()-1), "%m"), "_",
-                 format(as.Date(Sys.Date()-2), "%d"),
+                 format(as.Date(Sys.Date()-1), "%d"), ".1",
                  "/Hospitalization_all_locs.csv",
                  sep = "")
 unzip(temp, files = filename)
@@ -264,7 +264,7 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
   TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
   NotHospital<-sum(CovidCounties[,n])
   StillHospital<-ceiling((TotalHospital-NotHospital))
-  Upper<- round(((StillHospital+changeC*.314)/TotalBeds+.6)*100,1)
+  Upper<- round(((StillHospital+changeC*.1)/TotalBeds+.6)*100,1)
   #Lower<- round(((StillHospital+changeC*.207)/TotalBeds+.55)*100,1)
   paste(Upper," %", sep = "") 
 }
@@ -556,20 +556,20 @@ server <- function(input, output) {
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
     NotHospital<-sum(CovidCounties[,n])
     StillHospital<-ceiling((TotalHospital-NotHospital))
-    Upper<-(signif(((StillHospital+changeC*.314)/TotalBeds+.6)*100,3))
+    Upper<-(signif(((StillHospital+changeC*.1)/TotalBeds+.6)*100,3))
     #Lower<-(signif(((StillHospital+changeC*.207)/TotalBeds+.6)*100,3))
     
     # Yesterday
     TotalHospitaly<-sum(CovidCounties[,ncol(CovidCounties)-1])
     NotHospitaly<-sum(CovidCounties[,n-1])
     StillHospitaly<-ceiling((TotalHospitaly-NotHospitaly))
-    Uppery<-(signif(((StillHospitaly+changey*.314)/TotalBeds+.6)*100,3))
+    Uppery<-(signif(((StillHospitaly+changey*.1)/TotalBeds+.6)*100,3))
     #Lowery<-(signif(((StillHospitaly+changey*.207)/TotalBeds+.6)*100,3))
     
     chng <- round((Upper-Uppery)/2, 1)
     
     if (chng < 0) {
-      sign <- "-"
+      sign <- ""
     } else {
       sign <- "+"
     }
