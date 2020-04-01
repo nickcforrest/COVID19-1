@@ -5,41 +5,42 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#
+# 
 #import
-# pacman::p_load(dplyr,
-#                ggplot2,
-#                tidyverse,
-#                tidyr,
-#                shinydashboard,
-#                shiny,
-#                geosphere,
-#                scales,
-#                googleVis,
-#                reshape2,
-#                usmap,
-#                data.table,
-#                plyr,
-#                choroplethr,
-#                choroplethrMaps
-# )
+pacman::p_load(dplyr,
+               ggplot2,
+               tidyverse,
+               tidyr,
+               shinydashboard,
+               shiny,
+               geosphere,
+               scales,
+               googleVis,
+               reshape2,
+               usmap,
+               data.table,
+               plyr,
+               choroplethr,
+               choroplethrMaps,
+               DT
+)
 
-library(dplyr)
-library(ggplot2)
-#library(tidyverse)
-library(tidyr)
-library(shinydashboard)
-library(shiny)
-library(geosphere)
-library(scales)
-library(googleVis)
-#library(reshape2)
-library(usmap)
-library(data.table)
-library(plyr)
-#library(choroplethr)
-#library(choroplethrMaps)
-library(DT)
+# library(dplyr)
+# library(ggplot2)
+# #library(tidyverse)
+# library(tidyr)
+# library(shinydashboard)
+# library(shiny)
+# library(geosphere)
+# library(scales)
+# library(googleVis)
+# #library(reshape2)
+# library(usmap)
+# library(data.table)
+# library(plyr)
+# #library(choroplethr)
+# #library(choroplethrMaps)
+
 
 
 #Define Variables and load in data up front if necessary
@@ -55,21 +56,21 @@ colnames(CovidDeaths)[1]<-"CountyFIPS"
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 
 #Read in IHME data
-# temp <- tempfile()
-# download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-# filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
-#                  format(as.Date(Sys.Date()), "%m"), "_",
-#                  format(as.Date(Sys.Date()-1), "%d"),
-#                  "/Hospitalization_all_locs.csv",
-#                  sep = "")
-# unzip(temp, files = filename)
-# IHME_Model <- read.csv(filename)
-# unlink(temp)
-# 
-# IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
-# StateList <- data.frame(state.name, state.abb)
-# IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
-# names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
+temp <- tempfile()
+download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
+filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
+                 format(as.Date(Sys.Date()-1), "%m"), "_",
+                 format(as.Date(Sys.Date()-2), "%d"),
+                 "/Hospitalization_all_locs.csv",
+                 sep = "")
+unzip(temp, files = filename)
+IHME_Model <- read.csv(filename)
+unlink(temp)
+
+IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
+StateList <- data.frame(state.name, state.abb)
+IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
+names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
 
 
 # #Create list of hospitals, bases, and counties.
@@ -77,6 +78,7 @@ BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
 HospitalList <- HospitalInfo$NAME
 CountyList <- CountyInfo$County
 
+#Create National Data Table
 NationalDataTable<-CovidConfirmedCases
 NationalDataTable$State<-as.factor(NationalDataTable$State)
 NationalDataTable<-NationalDataTable[,-c(1,2,4)]
@@ -93,6 +95,8 @@ RateofDeathChange<-ceiling(rowSums(RateofDeathChange[1:6]-RateofDeathChange[2:7]
 
 NationalDataTable<-data.frame(NationalDataTable$State, NationalDataTable[,length(NationalDataTable)],RateofCovidChange, NationalDeathTable[,length(NationalDeathTable)], RateofDeathChange)
 colnames(NationalDataTable)<-c("State","Total Cases","Average New Cases Per Day", "Total Deaths","Average New Deaths Per Day")
+
+
 
 
 
@@ -145,8 +149,18 @@ ui <- tagList(
                              ),
                              br(),
                              actionButton("refresh", "Refresh", width = "90%"),
-                             hr()
+                             hr(),
+                             fluidRow(
+                                 valueBox("LOW RISK", subtitle ="Mission Risk",color= "green",width = 12)
+                             ),
+                             fluidRow(
+                                 valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow", width = 12)
+                             ),
+                             fluidRow(
+                                 valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red",width = 12)
+                             )
                          )
+                         
         ),
         
         dashboardBody(
@@ -166,11 +180,6 @@ ui <- tagList(
                        $("header").find("nav").append(\'<span class="myClass"> Tailored Risk Assesments </span>\');
                        })
                        ')),
-            fluidRow(
-                valueBox("LOW RISK", subtitle ="Mission Risk",color= "green",icon = icon("smile")),
-                valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow",icon = icon("meh")),
-                valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red",icon = icon("frown"))
-            ),
             
             tabsetPanel(id = "tabs",
                         ####### START OVERALL RISK TAB #######
@@ -221,14 +230,14 @@ ui <- tagList(
                                 valueBoxOutput("HospitalUtilization")
                             ),
                             fluidRow(
-                                box("- new cases", background = "aqua", width = 4),
-                                box("_ new deaths", background = "red", width = 4),
-                                box("_ change in hospital utilization", background = "teal", width = 4)
+                                valueBoxOutput("CaseChangeLocal", width = 4),
+                                valueBoxOutput("DeathChangeLocal", width = 4),
+                                valueBoxOutput("HospUtlzChange", width = 4)
                             ),
                             fluidRow( 
-                                box(title = "Daily IHME",plotOutput("IHME_State_Hosp")),
-                                box(title = "Daily Impact",plotOutput("LocalHealthPlot1")),
-                                box(title = "Total Impact",plotOutput("LocalHealthPlot2"))
+                                box(title = "IHME Hospitalization Projections",plotOutput("IHME_State_Hosp",height = 300)),
+                                box(title = "Daily New Cases",plotOutput("LocalHealthPlot1",height = 300)),
+                                box(title = "Total Cases",plotOutput("LocalHealthPlot2",height = 300))
                             )
                         )
                         ####### END LOCAL HEALTH RISK TAB #######
@@ -269,22 +278,19 @@ CalculateDeaths<-function(ChosenBase, Radius, IncludedCounties){
 HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     #Finds number of hospitals in radius
     TotalBeds<-sum(IncludedHospitals$BEDS)
-    
     #Finds which counties in given radius. Also Give county statistics
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+    
+    x <- length(CovidCounties)
+    changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+    
     n<-ncol(CovidCounties)-6
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
     NotHospital<-sum(CovidCounties[,n])
     StillHospital<-ceiling((TotalHospital-NotHospital))
-    Upper<-(signif((StillHospital/TotalBeds*.314+.6)*100,3))
-    Lower<-(signif((StillHospital/TotalBeds*.207+.6)*100,3))
-    if(Upper-Lower >= 1){
-        Lower = round(Lower)
-        Upper = round(Upper)
-        paste(paste(Lower, Upper, sep = "-"),"%")} 
-    else {
-        paste(mean(Upper,Lower),"%")  
-    }
+    Upper<- round(((StillHospital+changeC*.314)/TotalBeds+.6)*100,1)
+    #Lower<- round(((StillHospital+changeC*.207)/TotalBeds+.55)*100,1)
+    paste(Upper," %", sep = "") 
 }
 
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
@@ -357,7 +363,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
     
     #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
     #plot for local area cumulative
-    ggplot(Chart2DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
+    ggplot(Chart2DataSub,height = 250) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
@@ -391,7 +397,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
 #     
 # 
 #     
-#                    
+#     
 #     
 #     
 # }
@@ -493,7 +499,8 @@ server <- function(input, output) {
                                   #colorAxis="{colors:'grey', 'red']}",
                                   displayMode="regions", 
                                   resolution="provinces",
-                                  width=400))
+                                  width=600,
+                                  height = 400))
         
     })
     
@@ -511,31 +518,92 @@ server <- function(input, output) {
         county_choropleth(countyTotals, num_colors = 1, county_zoom = nearby_counties)
     })
     
-    # #Create IHME plot by State projected hospitalization 
-    # output$IHME_State_Hosp<-renderPlot({
-    #     BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
-    #     
-    #     IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
-    #     
-    #     
-    #     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
-    #         geom_line(linetype = "dashed", size = 1) +
-    #         geom_ribbon(alpha=0.3, fill = "tan3") + 
-    #         labs(x = "Date", y = "Projected Daily Hospitalizations") +
-    #         theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
-    #               axis.text.x = element_text(angle = 60, hjust = 1)) +
-    #         scale_x_date(date_breaks = "2 week")+
-    #       theme_bw()+  
-    #       theme(
-    #         plot.background = element_blank()
-    #         ,panel.grid.major = element_blank()
-    #         ,panel.grid.minor = element_blank()
-    #         ,panel.border = element_blank()
-    #       ) +
-    #       theme(axis.line = element_line(color = "black"))+
-    #       theme(legend.position = "top")
-    #     
-    # })
+    #Create IHME plot by State projected hospitalization 
+    output$IHME_State_Hosp<-renderPlot({
+        BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
+        
+        IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
+        
+        
+        ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
+            geom_line(linetype = "dashed", size = 1) +
+            geom_ribbon(alpha=0.3, fill = "tan3") + 
+            labs(x = "Date", y = "Projected Daily Hospitalizations") +
+            theme_bw() +
+            theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
+                  axis.text.x = element_text(angle = 60, hjust = 1), 
+                  axis.line = element_line(color = "black"),
+                  legend.position = "top",
+                  plot.background = element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank()) +
+            scale_x_date(date_breaks = "2 week")
+    })
+    
+    
+    output$CaseChangeLocal <- renderValueBox({
+        MyCounties<-GetCounties()
+        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
+        x <- length(CovidCounties)
+        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+        
+        valueBox(paste("+",toString(changeC)),
+                 subtitle = "New Confirmed Cases", 
+                 color = "aqua")
+    })
+    
+    output$DeathChangeLocal <- renderValueBox({
+        MyCounties<-GetCounties()
+        CovidCounties<-subset(CovidDeaths, CountyFIPS %in% MyCounties$FIPS)
+        x <- length(CovidCounties)
+        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+        
+        valueBox(paste("+",toString(changeC)),
+                 subtitle = "New Confirmed Deaths", 
+                 color = "red")
+    })
+    
+    output$HospUtlzChange <- renderValueBox({
+        MyCounties<-GetCounties()
+        MyHospitals<-GetHospitals()
+        TotalBeds<-sum(MyHospitals$BEDS)
+        
+        #Finds which counties in given radius. Also Give county statistics
+        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
+        n <- ncol(CovidCounties)-6
+        
+        x <- length(CovidCounties)
+        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+        changey <- sum(CovidCounties[x-1] - CovidCounties[x-2])
+        
+        # Today
+        TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
+        NotHospital<-sum(CovidCounties[,n])
+        StillHospital<-ceiling((TotalHospital-NotHospital))
+        Upper<-(signif(((StillHospital+changeC*.314)/TotalBeds+.6)*100,3))
+        #Lower<-(signif(((StillHospital+changeC*.207)/TotalBeds+.6)*100,3))
+        
+        # Yesterday
+        TotalHospitaly<-sum(CovidCounties[,ncol(CovidCounties)-1])
+        NotHospitaly<-sum(CovidCounties[,n-1])
+        StillHospitaly<-ceiling((TotalHospitaly-NotHospitaly))
+        Uppery<-(signif(((StillHospitaly+changey*.314)/TotalBeds+.6)*100,3))
+        #Lowery<-(signif(((StillHospitaly+changey*.207)/TotalBeds+.6)*100,3))
+        
+        chng <- round((Upper-Uppery)/2, 1)
+        
+        if (chng < 0) {
+            sign <- "-"
+        } else {
+            sign <- "+"
+        }
+        
+        valueBox(paste(sign,toString(chng),"%"),
+                 subtitle = "Hospital Utilization Change", 
+                 color = "teal")
+    })
+    
     
     output$NationalDataTable1<-DT::renderDataTable({data.frame(NationalDataTable)
         NationalDataTable
@@ -574,6 +642,7 @@ server <- function(input, output) {
     
     
 }
+
 
 ##########################################
 # Run the application 
