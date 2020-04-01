@@ -162,8 +162,7 @@ ui <- tagList(
                   tabPanel(
                     title = "Summary",
                     fluidRow( 
-                      box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot")),
-                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
+                      box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot"))
                     ),
                     fluidRow( 
                       box(title = "National Stats ","insert stats here"),
@@ -176,7 +175,11 @@ ui <- tagList(
                   tabPanel(
                     title = "Local Health Projections",
                     fluidRow(
-                      box(plotOutput("IHME_State_Hosp",height = 300))
+                      valueBoxOutput("TotalPopulation")
+                    ),
+                    fluidRow(
+                      box(plotOutput("IHME_State_Hosp",height = 400)),
+                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
                     )
                   ),
                   ####### END MISSION RISK TAB #######
@@ -185,8 +188,6 @@ ui <- tagList(
                   tabPanel(
                     title = "Installation Health", 
                     fluidRow(
-                      # A static valueBox
-                      valueBoxOutput("TotalPopulation"),
                       valueBox(2, subtitle ="Installation Specific Deaths", color= "red",icon = icon("skull")),
                       valueBox("85%", subtitle = "Installation Medical Utilization", color = "teal", icon = icon("hospital"))
                     ),
@@ -408,7 +409,7 @@ server <- function(input, output) {
   #Finds which counties in given radius. Also Give county statistics
   output$TotalPopulation <- renderValueBox({
     MyCounties<-GetCounties()
-    valueBox(subtitle = "Total Air Force Cases",
+    valueBox(subtitle = "Total Regional Population",
              comma(CalculateCounties(input$Base,input$Radius, MyCounties)),
              icon = icon("list-ol")
     )
@@ -505,7 +506,7 @@ server <- function(input, output) {
     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
       geom_line(linetype = "dashed", size = 1) +
       geom_ribbon(alpha=0.3, fill = "tan3") + 
-        labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), sep = ""), 
+        labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), " Region", sep = ""), 
              x = "Date", 
              y = "Projected Daily Hospitalizations") +
       theme_bw() +
