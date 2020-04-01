@@ -211,7 +211,7 @@ ui <- tagList(
                       valueBoxOutput("HospUtlzChange", width = 4)
                     ),
                     fluidRow( 
-                      box(title = "IHME Hospitalization Projections",plotOutput("IHME_State_Hosp",height = 300)),
+                      box(plotOutput("IHME_State_Hosp",height = 300)),
                       box(title = "Daily New Cases",plotOutput("LocalHealthPlot1",height = 300)),
                       box(title = "Total Cases",plotOutput("LocalHealthPlot2",height = 300))
                     )
@@ -264,7 +264,7 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
   TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
   NotHospital<-sum(CovidCounties[,n])
   StillHospital<-ceiling((TotalHospital-NotHospital))
-  Upper<- round(((StillHospital+changeC*.314)/TotalBeds+.6)*100,1)
+  Upper<- round(((StillHospital+changeC*.1)/TotalBeds+.6)*100,1)
   #Lower<- round(((StillHospital+changeC*.207)/TotalBeds+.55)*100,1)
   paste(Upper," %", sep = "") 
 }
@@ -504,7 +504,9 @@ server <- function(input, output) {
     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
       geom_line(linetype = "dashed", size = 1) +
       geom_ribbon(alpha=0.3, fill = "tan3") + 
-      labs(x = "Date", y = "Projected Daily Hospitalizations") +
+        labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), sep = ""), 
+             x = "Date", 
+             y = "Projected Daily Hospitalizations") +
       theme_bw() +
       theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
             axis.text.x = element_text(angle = 60, hjust = 1), 
@@ -557,20 +559,20 @@ server <- function(input, output) {
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
     NotHospital<-sum(CovidCounties[,n])
     StillHospital<-ceiling((TotalHospital-NotHospital))
-    Upper<-(signif(((StillHospital+changeC*.314)/TotalBeds+.6)*100,3))
+    Upper<-(signif(((StillHospital+changeC*.1)/TotalBeds+.6)*100,3))
     #Lower<-(signif(((StillHospital+changeC*.207)/TotalBeds+.6)*100,3))
     
     # Yesterday
     TotalHospitaly<-sum(CovidCounties[,ncol(CovidCounties)-1])
     NotHospitaly<-sum(CovidCounties[,n-1])
     StillHospitaly<-ceiling((TotalHospitaly-NotHospitaly))
-    Uppery<-(signif(((StillHospitaly+changey*.314)/TotalBeds+.6)*100,3))
+    Uppery<-(signif(((StillHospitaly+changey*.1)/TotalBeds+.6)*100,3))
     #Lowery<-(signif(((StillHospitaly+changey*.207)/TotalBeds+.6)*100,3))
     
     chng <- round((Upper-Uppery)/2, 1)
     
     if (chng < 0) {
-      sign <- "-"
+      sign <- ""
     } else {
       sign <- "+"
     }
