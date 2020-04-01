@@ -59,9 +59,9 @@ HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 #Read in IHME data
 temp <- tempfile()
 download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-filename = paste(format(as.Date(Sys.Date()), "%Y"), "_",
+filename = paste(format(as.Date(Sys.Date()-1), "%Y"), "_",
                  format(as.Date(Sys.Date()-1), "%m"), "_",
-                 format(as.Date(Sys.Date()-2), "%d"),
+                 format(as.Date(Sys.Date()-1), "%d"), ".1",
                  "/Hospitalization_all_locs.csv",
                  sep = "")
 unzip(temp, files = filename)
@@ -184,8 +184,7 @@ ui <- tagList(
                   tabPanel(
                     title = "Summary",
                     fluidRow( 
-                      box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot")),
-                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
+                      box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot"))
                     ),
                     fluidRow( 
                         box(title = "National Statistics", solidHeader=T, align = "left", DT::dataTableOutput("NationalDataTable1", width = 100)),
@@ -194,10 +193,16 @@ ui <- tagList(
                   ),
                   ####### END OVERALL RISK TAB #######
                   
-                  ####### START MISSION RISK TAB #######
+                  ####### START PROJECTIONS TAB #######
                   tabPanel(
-                    title = "Mission",
-                    value = plotOutput("plot")
+                    title = "Local Health Projections",
+                    fluidRow(
+                      valueBoxOutput("TotalPopulation")
+                    ),
+                    fluidRow(
+                      box(plotOutput("IHME_State_Hosp",height = 400)),
+                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
+                    )
                   ),
                   ####### END MISSION RISK TAB #######
                   
@@ -205,8 +210,6 @@ ui <- tagList(
                   tabPanel(
                     title = "Installation Health", 
                     fluidRow(
-                      # A static valueBox
-                      valueBoxOutput("TotalPopulation"),
                       valueBox(2, subtitle ="Installation Specific Deaths", color= "red",icon = icon("skull")),
                       valueBox("85%", subtitle = "Installation Medical Utilization", color = "teal", icon = icon("hospital"))
                     ),
@@ -233,7 +236,6 @@ ui <- tagList(
                       valueBoxOutput("HospUtlzChange", width = 4)
                     ),
                     fluidRow( 
-                      box(plotOutput("IHME_State_Hosp",height = 300)),
                       box(title = "Daily New Cases",plotOutput("LocalHealthPlot1",height = 300)),
                       box(title = "Total Cases",plotOutput("LocalHealthPlot2",height = 300))
                     )
@@ -439,7 +441,7 @@ server <- function(input, output) {
   #Finds which counties in given radius. Also Give county statistics
   output$TotalPopulation <- renderValueBox({
     MyCounties<-GetCounties()
-    valueBox(subtitle = "Total Air Force Cases",
+    valueBox(subtitle = "Total Regional Population",
              comma(CalculateCounties(input$Base,input$Radius, MyCounties)),
              icon = icon("list-ol")
     )
@@ -536,11 +538,12 @@ server <- function(input, output) {
     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
       geom_line(linetype = "dashed", size = 1) +
       geom_ribbon(alpha=0.3, fill = "tan3") + 
-        labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), sep = ""), 
+        labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), " Region", sep = ""), 
              x = "Date", 
              y = "Projected Daily Hospitalizations") +
       theme_bw() +
-      theme(axis.title = element_text(face = "bold",size = 11,family = "sans"),
+      theme(plot.title = element_text(face = "bold", size = 18, family = "sans"),
+            axis.title = element_text(face = "bold",size = 11,family = "sans"),
             axis.text.x = element_text(angle = 60, hjust = 1), 
             axis.line = element_line(color = "black"),
             legend.position = "top",
