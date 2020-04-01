@@ -187,8 +187,8 @@ ui <- tagList(
                       box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot"))
                     ),
                     fluidRow( 
-                        box(title = "National Statistics", solidHeader=T, align = "left", DT::dataTableOutput("NationalDataTable1", width = 100)),
-                        box(title = "Local County Statistics", solidHeader=T, align = "left", DT::dataTableOutput("CountyDataTable1", width = 100))
+                        box(title = "National Statistics", solidHeader=T, align = "left", DT::dataTableOutput("NationalDataTable1", width = 100))
+                        
                     )
                   ),
                   ####### END OVERALL RISK TAB #######
@@ -202,6 +202,9 @@ ui <- tagList(
                     fluidRow(
                       box(plotOutput("IHME_State_Hosp",height = 400)),
                       box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
+                    ),
+                    fluidRow(
+                        box(title = "Local County Statistics", solidHeader=T, align = "left", DT::dataTableOutput("CountyDataTable1", width = 100))
                     )
                   ),
                   ####### END MISSION RISK TAB #######
@@ -509,7 +512,7 @@ server <- function(input, output) {
                               #colorAxis="{colors:'grey', 'red']}",
                               displayMode="regions", 
                               resolution="provinces",
-                              width=600,
+                              width=800,
                               height = 400))
     
   })
