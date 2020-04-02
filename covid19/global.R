@@ -34,6 +34,7 @@ library(googleVis)
 #library(reshape2)
 library(usmap)
 library(data.table)
+library(markdown)
 
 
 
