@@ -6,7 +6,11 @@
 #
 #    http://shiny.rstudio.com/
 # 
-#import
+
+
+# Begin Loading Necessary Packages ----------------------------------------
+
+#USE THIS IF YOU DO NOT HAVE ALL PACKAGES INSTALLED ALREADY
 # pacman::p_load(dplyr,
 #                ggplot2,
 #                tidyverse,
@@ -25,24 +29,24 @@
 #                DT
 # )
 
+#USE THIS IF YOU HAVE THE PACKAGES INSTALLED AND WANT TO LOAD LIBRARIES QUICKER
 library(dplyr)
 library(ggplot2)
-#library(tidyverse)
 library(tidyr)
 library(shinydashboard)
 library(shiny)
 library(geosphere)
 library(scales)
 library(googleVis)
-#library(reshape2)
 library(usmap)
 library(data.table)
 library(plyr)
-#library(choroplethr)
-#library(choroplethrMaps)
 library(DT)
 
 
+
+
+# Establishing Datasets and lists for the program ----------------------------------------------------------------------------------------------------
 
 #Define Variables and load in data up front if necessary
 CovidConfirmedCases <- read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv")
@@ -52,14 +56,36 @@ HospitalInfo <- read.csv("https://opendata.arcgis.com/datasets/6ac5e325468c4cb9b
 CovidDeaths<-read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv")
 colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 colnames(CovidDeaths)[1]<-"CountyFIPS"
-#Minus<-ncol(CovidDeaths)
-#CovidDeaths<-CovidDeaths[,-(Minus)]
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 
 
 
+#Read in IHME data for projecting data in the future
+temp <- tempfile()
+download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
+filename = paste(format(as.Date(Sys.Date()-1), "%Y"), "_",
+                 format(as.Date(Sys.Date()-1), "%m"), "_",
+                 format(as.Date(Sys.Date()-1), "%d"), ".2",
+                 "/Hospitalization_all_locs.csv", 
+                 sep = "")
 
-#Calls in datasets stritly for plotting local county
+unzip(temp, files = filename)
+IHME_Model <- read.csv(filename)
+unlink(temp)
+IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
+StateList <- data.frame(state.name, state.abb)
+IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
+names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
+
+
+#Create list of hospitals, bases, and counties.
+BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
+HospitalList <- HospitalInfo$NAME
+CountyList <- CountyInfo$County
+
+
+
+######################Data Specific to plotting counties and states as choropleth
 #Input the Included Counties as factors
 PlottingCountyData<- read.csv("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv",
                               header = TRUE, stringsAsFactors = FALSE)
@@ -77,30 +103,6 @@ county_df$state_name <- NULL
 state_df <- map_data("state", projection = "albers", parameters = c(39, 45))
 colnames(county_df)[6]<-"State"
 
-
-
-#Read in IHME data
-temp <- tempfile()
-download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-filename = paste(format(as.Date(Sys.Date()-1), "%Y"), "_",
-                 format(as.Date(Sys.Date()-1), "%m"), "_",
-                 format(as.Date(Sys.Date()-1), "%d"), ".1",
-                 "/Hospitalization_all_locs.csv",
-                 sep = "")
-unzip(temp, files = filename)
-IHME_Model <- read.csv(filename)
-unlink(temp)
-
-IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
-StateList <- data.frame(state.name, state.abb)
-IHME_Model <- merge(IHME_Model, StateList, by.x = "location", by.y = names(StateList)[1])
-names(IHME_Model)[names(IHME_Model)=="state.abb"] <- "State"
-
-
-# #Create list of hospitals, bases, and counties.
-BaseList<-sort(AFBaseLocations$Base, decreasing = FALSE)
-HospitalList <- HospitalInfo$NAME
-CountyList <- CountyInfo$County
 
 #Create National Data table on summary page
 NationalDataTable<-CovidConfirmedCases
@@ -123,7 +125,14 @@ NationalDataTable$`Cases Per 1000 People`<-c(731449,4822023,2949131,6553255,3804
 NationalDataTable$`Cases Per 1000 People`<-round(NationalDataTable$`Total Cases`/(NationalDataTable$`Cases Per 1000 People`/1000))
 
 
+
+
+# Begin User Interface ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 #Build UI
+#Establishes the layout of the overall dashboard and how items are displayed
 ui <- tagList(
     dashboardPage(skin = "black",
                   dashboardHeader(title = "COVID-19 Risk Dashboard",
@@ -284,11 +293,18 @@ ui <- tagList(
 ###############################
 
 
+# Establish Local Counties ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#These Functions establishes which counties are going to be included in the analysis determined by the base and radius.
 CalculateCounties<-function(ChosenBase, Radius, IncludedCounties){
     #Finds which counties in given radius. Also Give county statistics
     TotalPopulation <-  sum(IncludedCounties$Population)
     TotalPopulation
 }
+
+
+# Create Numerical Statistics for the dashboard -------------------------------------------------------------------------------------------------------------------------------------
+
 
 # Finds Covid Cases and statistics on covid per county
 CalculateCovid<-function(ChosenBase, Radius, IncludedCounties){
@@ -308,10 +324,8 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
     TotalBeds<-sum(IncludedHospitals$BEDS)
     #Finds which counties in given radius. Also Give county statistics
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-    
     x <- length(CovidCounties)
     changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
-    
     n<-ncol(CovidCounties)-6
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
     NotHospital<-sum(CovidCounties[,n])
@@ -321,11 +335,15 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
     paste(Upper," %", sep = "") 
 }
 
+
+
+# Create Charts for plotting lines showing trends among the virus  ------------------------------------------------------------------------------------------------------------------
+
+
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
 CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     #Finds number of hospitals in radius
     TotalBeds<-sum(IncludedHospitals$BEDS)
-    
     #Finds which counties in given radius. Also Give county statistics
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     VectDailyCovid<-colSums(CovidCounties[29:length(CovidCounties)])
@@ -333,21 +351,16 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
     DailyNewCases
     DailyNewHospitalizations<-ceiling(DailyNewCases*.26)
     DailyNewHospitalizations
-    
-    
     #Find New Deaths
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     VectDailyDeaths<-colSums(CovidCountiesDeath[29:ncol(CovidCountiesDeath)])
     DailyNewDeaths<-VectDailyDeaths[2:length(VectDailyDeaths)]-VectDailyDeaths[1:(length(VectDailyDeaths)-1)]
-    
-    
+    #Clean up the dataset to prepare for plotting
     ForecastDate<- seq(as.Date("2020-02-15"), length=(length(DailyNewDeaths)), by="1 day")
     Chart1Data<-cbind.data.frame(ForecastDate,DailyNewCases,DailyNewHospitalizations,DailyNewDeaths)
     colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Fatalities")
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
-    
-    #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
-    #plot for local area daily
+    #plot for local area daily cases
     ggplot(Chart1DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
@@ -366,31 +379,25 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
         theme(legend.position = "top")
 }
 
+
+
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
 CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     #Finds number of hospitals in radius
     TotalBeds<-sum(IncludedHospitals$BEDS)
-    
     #Finds which counties in given radius. Also Give county statistics
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     CumDailyCovid<-colSums(CovidCounties[29:length(CovidCounties)])
     CumHospitalizations<-ceiling(CumDailyCovid*.26)
-    
-    
-    
     #Find New Deaths
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     CumDailyDeaths<-colSums(CovidCountiesDeath[29:ncol(CovidCountiesDeath)])
-    
-    
-    
+    #Clean up the dataset to get ready to plot it
     ForecastDate<- seq(as.Date("2020-02-15"), length=(length(CumDailyDeaths)), by="1 day")
     Chart2Data<-cbind.data.frame(ForecastDate,CumDailyCovid,CumHospitalizations,CumDailyDeaths)
     colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Fatalities")
     Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
-    
-    #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
-    #plot for local area cumulative
+    #plot for local area cumulative cases
     ggplot(Chart2DataSub,height = 250) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
@@ -410,6 +417,9 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
 }
 
 
+
+# Create data tables for analysis ---------------------------------------------------------------------------------------------------------------------------------------------------
+
 #Create Data Table for local statistics
 GetLocalDataTable<-function(IncludedCounties){
     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
@@ -421,6 +431,8 @@ GetLocalDataTable<-function(IncludedCounties){
 }
 
 
+
+# Create choropleth functions -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #Create plot of Covid Cases by County
 PlotLocalChoro<-function(IncludedCounties, ChosenBase){
@@ -448,28 +460,8 @@ PlotLocalChoro<-function(IncludedCounties, ChosenBase){
         scale_fill_viridis("magma")
     
     plot(PlotCovidLocal)
-    
 }
 
-# CovidCountyChoropleth<-function(ChosenBase, Radius){
-# 
-#     #Finds which counties in given radius. Also Give county statistics
-#     BaseStats<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
-#     for (i in 1:3143) {
-#         CountyInfo$DistanceMiles[i]<-(distm(c(BaseStats$Long, BaseStats$Lat), c(CountyInfo$Longitude[i], CountyInfo$Latitude[i]), fun = distHaversine)/1609.34)
-#     }
-#     IncludedCounties<-dplyr::filter(CountyInfo, DistanceMiles <= Radius)
-#     CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-#     
-#     
-# 
-#     
-# 
-#     
-#     
-#     
-#     
-# }
 
 
 
@@ -477,6 +469,9 @@ PlotLocalChoro<-function(IncludedCounties, ChosenBase){
 # Define server logic, this is where all plots are generated. 
 server <- function(input, output) {
     
+
+# Establish the Hospitals and counties within range ---------------------------------------------------------------------------------------------------------------------------------
+
     
     GetCounties<-reactive({
         BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
@@ -498,7 +493,11 @@ server <- function(input, output) {
         IncludedHospitals
     })
     
-    #Finds which counties in given radius. Also Give county statistics
+    
+
+# Output common statistics ------------------------------------------------
+
+#Finds which counties in given radius. Also Give county statistics
     output$TotalPopulation <- renderValueBox({
         MyCounties<-GetCounties()
         valueBox(subtitle = "Total Regional Population",
@@ -508,7 +507,7 @@ server <- function(input, output) {
         
     })
     
-    # Finds Covid Cases and statistics on covid per county
+# Finds Covid Cases and statistics on covid per county
     output$CovidCases <- renderValueBox({
         MyCounties<-GetCounties()
         valueBox(subtitle = "Local Cases",
@@ -519,7 +518,20 @@ server <- function(input, output) {
         
     })
     
-    # Finds Covid Cases and statistics on covid per county
+#Outputs change in covid cases per day
+    output$CaseChangeLocal <- renderValueBox({
+        MyCounties<-GetCounties()
+        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
+        x <- length(CovidCounties)
+        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+        
+        valueBox(paste("+",toString(changeC)),
+                 subtitle = "New Confirmed Cases", 
+                 color = "light-blue")
+    })
+    
+    
+# Finds Covid deaths and statistics on covid per county
     output$LocalCovidDeaths <- renderValueBox({
         MyCounties<-GetCounties()
         valueBox(subtitle = "Local Fatalities",
@@ -529,7 +541,19 @@ server <- function(input, output) {
         )
     })
     
-    #Finds hospital information within a given 100 mile radius. Calculates number of total hospital beds. Can compare to number of cases
+#Outputs change in deaths per day   
+    output$DeathChangeLocal <- renderValueBox({
+        MyCounties<-GetCounties()
+        CovidCounties<-subset(CovidDeaths, CountyFIPS %in% MyCounties$FIPS)
+        x <- length(CovidCounties)
+        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+        
+        valueBox(paste("+",toString(changeC)),
+                 subtitle = "New Confirmed Fatalities", 
+                 color = "blue")
+    })
+    
+#Finds hospital information within a given 100 mile radius. Calculates number of total hospital beds. Can compare to number of cases
     output$HospitalUtilization <- renderValueBox({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
@@ -539,21 +563,67 @@ server <- function(input, output) {
                  color = "navy")
     })
     
-    #Create first plot of local health population 
+
+    
+    output$HospUtlzChange <- renderValueBox({
+        MyCounties<-GetCounties()
+        MyHospitals<-GetHospitals()
+        TotalBeds<-sum(MyHospitals$BEDS)
+        
+        #Finds which counties in given radius. Also Give county statistics
+        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
+        n <- ncol(CovidCounties)-6
+        x <- length(CovidCounties)
+        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
+        changey <- sum(CovidCounties[x-1] - CovidCounties[x-2])
+        # Today
+        TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
+        NotHospital<-sum(CovidCounties[,n])
+        StillHospital<-ceiling((TotalHospital-NotHospital))
+        Upper<-(signif(((StillHospital+changeC*.1)/TotalBeds+.6)*100,3))
+        #Lower<-(signif(((StillHospital+changeC*.207)/TotalBeds+.6)*100,3))
+        # Yesterday
+        TotalHospitaly<-sum(CovidCounties[,ncol(CovidCounties)-1])
+        NotHospitaly<-sum(CovidCounties[,n-1])
+        StillHospitaly<-ceiling((TotalHospitaly-NotHospitaly))
+        Uppery<-(signif(((StillHospitaly+changey*.1)/TotalBeds+.6)*100,3))
+        #Lowery<-(signif(((StillHospitaly+changey*.207)/TotalBeds+.6)*100,3))
+        chng <- round((Upper-Uppery)/2, 1)
+        
+        if (chng < 0) {
+            sign <- ""
+        } else {
+            sign <- "+"
+        }
+        
+        valueBox(paste(sign,toString(chng),"%"),
+                 subtitle = "Hospital Utilization Change", 
+                 color = "navy")
+    })
+    
+
+# Output line plots for the dashboard ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#Create first plot of local health population 
     output$LocalHealthPlot1<-renderPlot({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
         CovidCasesPerDayChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
-    #Create second plot of local health population 
+#Create second plot of local health population 
     output$LocalHealthPlot2<-renderPlot({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
         CovidCasesCumChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
-    #Create Country Plot on Summary page
+
+# Output Choropleth Charts ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#Create Country Plot on Summary page
     output$SummaryPlot<-renderGvis({
         DF<-cbind.data.frame(CovidConfirmedCases$State, CovidConfirmedCases[,length(CovidConfirmedCases)])
         colnames(DF)<-c("state","Value")
@@ -572,30 +642,24 @@ server <- function(input, output) {
                                   resolution="provinces",
                                   width=600,
                                   height = 400))
-        
     })
-    
-    #Create County Plot on Summary page
-    output$CountySummary<-renderPlot({
-        CovidConfirmedCases <- CovidConfirmedCases[!duplicated(CovidConfirmedCases[1]),]
-        countyMap_choro <- merge(CountyInfo,CovidConfirmedCases,by.x = "FIPS",by.y = names(CovidConfirmedCases)[1])
-        countyMap_choro$Total <- rowSums(countyMap_choro[,18:length(countyMap_choro)])
-        countyTotals <- countyMap_choro[,c("FIPS","Total")]
-        names(countyTotals)[1] <- "region"
-        names(countyTotals)[2] <- "value"
-        countyTotals[2413,1] <- 46113
+   
+     
+#Creates the local choropleth charts that change based on which base and radius.
+    output$LocalChoroPlot<-renderPlot({
         MyCounties<-GetCounties()
-        nearby_counties <- MyCounties$FIPS
-        county_choropleth(countyTotals, num_colors = 1, county_zoom = nearby_counties)
+        PlotLocalChoro(MyCounties, input$Base)
     })
     
-    #Create IHME plot by State projected hospitalization 
+    
+
+# Output Projections  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    
+#Create IHME plot by State projected hospitalization 
     output$IHME_State_Hosp<-renderPlot({
         BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
-        
         IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
-        
-        
         ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
             geom_line(linetype = "dashed", size = 1) +
             geom_ribbon(alpha=0.3, fill = "tan3") + 
@@ -615,69 +679,13 @@ server <- function(input, output) {
             scale_x_date(date_breaks = "2 week")
     })
     
+   
+
+        
     
-    output$CaseChangeLocal <- renderValueBox({
-        MyCounties<-GetCounties()
-        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
-        x <- length(CovidCounties)
-        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
-        
-        valueBox(paste("+",toString(changeC)),
-                 subtitle = "New Confirmed Cases", 
-                 color = "light-blue")
-    })
-    
-    output$DeathChangeLocal <- renderValueBox({
-        MyCounties<-GetCounties()
-        CovidCounties<-subset(CovidDeaths, CountyFIPS %in% MyCounties$FIPS)
-        x <- length(CovidCounties)
-        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
-        
-        valueBox(paste("+",toString(changeC)),
-                 subtitle = "New Confirmed Fatalities", 
-                 color = "blue")
-    })
-    
-    output$HospUtlzChange <- renderValueBox({
-        MyCounties<-GetCounties()
-        MyHospitals<-GetHospitals()
-        TotalBeds<-sum(MyHospitals$BEDS)
-        
-        #Finds which counties in given radius. Also Give county statistics
-        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
-        n <- ncol(CovidCounties)-6
-        
-        x <- length(CovidCounties)
-        changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
-        changey <- sum(CovidCounties[x-1] - CovidCounties[x-2])
-        
-        # Today
-        TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
-        NotHospital<-sum(CovidCounties[,n])
-        StillHospital<-ceiling((TotalHospital-NotHospital))
-        Upper<-(signif(((StillHospital+changeC*.1)/TotalBeds+.6)*100,3))
-        #Lower<-(signif(((StillHospital+changeC*.207)/TotalBeds+.6)*100,3))
-        
-        # Yesterday
-        TotalHospitaly<-sum(CovidCounties[,ncol(CovidCounties)-1])
-        NotHospitaly<-sum(CovidCounties[,n-1])
-        StillHospitaly<-ceiling((TotalHospitaly-NotHospitaly))
-        Uppery<-(signif(((StillHospitaly+changey*.1)/TotalBeds+.6)*100,3))
-        #Lowery<-(signif(((StillHospitaly+changey*.207)/TotalBeds+.6)*100,3))
-        
-        chng <- round((Upper-Uppery)/2, 1)
-        
-        if (chng < 0) {
-            sign <- ""
-        } else {
-            sign <- "+"
-        }
-        
-        valueBox(paste(sign,toString(chng),"%"),
-                 subtitle = "Hospital Utilization Change", 
-                 color = "navy")
-    })
-    
+
+# Output any data tables ------------------------------------------------------------------------------------------------------------------------------------------------------
+
     
     #Render National Data Table on summary page
     output$NationalDataTable1<-DT::renderDataTable({
@@ -694,10 +702,7 @@ server <- function(input, output) {
     })
     
     
-    output$LocalChoroPlot<-renderPlot({
-        MyCounties<-GetCounties()
-        PlotLocalChoro(MyCounties, input$Base)
-    })
+
     
     
     
