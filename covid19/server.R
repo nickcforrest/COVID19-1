@@ -1,6 +1,25 @@
-##########################################
-# Define server logic, this is where all plots are generated. 
+##################
+##### Server #####
+##################
+
+# Layout
+##############################################################################################################################################
+# The server is used to generate outputs based on the functions in the global. These outputs are then referenced in the UI and diplayed in the app
+# First:  Creating reactive functions that change based on radius and Base. The reactive functions are the most important functions in the app.
+#         Reactive functions change every time a new base is chosen or a radius is chosen. This updated the app automatically.
+# Second: This creates the output variables that can be referenced in the user interface. Each plot, statistic or map needs to have an output.
+#         There are 5 sub categories included: Common statistics, line plots, choropleth charts, projections, and data tables.
+# Third:  This creates the help settings in the app so that users can see documentation of inputs, sources, and calculations.
+##############################################################################################################################################       
+
+
+# Define server logic, within this all ouputs and reactive variables are generated. 
 server <- function(input, output) {
+
+
+# Step One
+###################################################################################################################################################
+    
     
     GetCounties<-reactive({
         #BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
@@ -24,7 +43,11 @@ server <- function(input, output) {
         IncludedHospitals
     })
     
-    # Output common statistics ------------------------------------------------
+# Step Two
+###################################################################################################################################################
+    
+    
+# Output common statistics -------------------------------------------------------------------------------------------------------------------------------------------
     
     #Finds which counties in given radius. Also Give county statistics
     output$TotalPopulation <- renderValueBox({
@@ -143,7 +166,7 @@ server <- function(input, output) {
     })
     
     
-    # Output line plots for the dashboard ----------------------------------------------------------------------------------------------------------------------------------------------------
+# Output line plots for the dashboard ----------------------------------------------------------------------------------------------------------------------------------------------------
     
     
     #Create first plot of local health population 
@@ -161,7 +184,7 @@ server <- function(input, output) {
     })
     
     
-    # Output Choropleth Charts ----------------------------------------------------------------------------------------------------------------------------------------------------------
+# Output Choropleth Charts ----------------------------------------------------------------------------------------------------------------------------------------------------------
     
     
     #Create Country Plot on Summary page
@@ -194,18 +217,15 @@ server <- function(input, output) {
     
     
     
-    # Output Projections  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Output Projections  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
     
     
     #Create IHME plot by State projected hospitalization 
     output$IHME_State_Hosp<-renderPlotly({
-        
+        #Creating the stats and dataframes determined by teh base we choose to look at.
         BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
-        
         IncludedHospitals<-GetHospitals()
-        
         IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
-        
         TotalBedsCounty <- sum(IncludedHospitals$BEDS)
         
         # Get total hospital bed number across state
@@ -242,18 +262,13 @@ server <- function(input, output) {
     })
     
     
-    
-    
-    
-    
-    # Output any data tables ------------------------------------------------------------------------------------------------------------------------------------------------------
+# Output any data tables ------------------------------------------------------------------------------------------------------------------------------------------------------
     
     
     #Render National Data Table on summary page
     output$NationalDataTable1<-DT::renderDataTable({
         NationalDataTable <- DT::datatable(data.frame(NationalDataTable),rownames = FALSE, options = list(dom = 'ft',ordering = F,"pageLength" = 51))
         NationalDataTable
-        
     })
     
     output$CountyDataTable1<-DT::renderDataTable({
@@ -263,19 +278,14 @@ server <- function(input, output) {
         dt
     })
     
+
     
     
     
-    
-    
-    # 
-    # 
-    # 
-    # 
-    # 
-    #
-    
-    
+# Step Three
+###################################################################################################################################################
+
+#Step three provides input information for annotation of the overall app such as inputs, sources, and calculations. 
     observeEvent(input$inputInfo, {
         showModal(
             modalDialog(

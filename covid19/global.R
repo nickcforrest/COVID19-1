@@ -1,4 +1,26 @@
+##################
+##### Global #####
+##################
+
+# Layout
+##############################################################################################################################################
+# The global introduces all libraries, functions, datasets, and formatting that is necessary to pass through the server.
+# First:  The libraries are loaded which have built in functions are used throughout the app.
+# Second: We load data from https://github.com/treypujats/COVID19/tree/master/covid19/data ,  usafacts.org , and covid19.healthdata.org
+#         The github data has static information on on all air force bases, US counties, and US hospitals. 
+#         The usafacts data has dynamic information that is updated daily reporting the number of cases and number of deaths daily.
+#         The IHME provides projection data of the pandemic
+#         After loading the data, we format headers, establish data tables for printing, and do any static changes to the dataset for the app.
+# Third:  Functions are used to execute the tasks in the server. Functions in the global are not dynamic, but they take in dynamic inputs
+#         Global functions are used to calculate statistics, make data tables, plot graphs, and create visuals.
+##############################################################################################################################################       
+
+
+
+# Step One
+###################################################################################################################################################
 #Loads in all necessary packages for the shiny app
+
 library(plyr)
 library(dplyr)
 library(ggplot2)
@@ -13,6 +35,9 @@ library(googleVis)
 library(usmap)
 library(data.table)
 
+
+
+# Step Two
 ###################################################################################################################################################
 #Define Variables and load in data up front if necessary.
 #This data updates daily with CovidConfirmedCases and CovidDeaths. The CDC updates these numbers every day.
@@ -28,10 +53,13 @@ HospitalInfo <- as.data.frame(data.table::fread("https://github.com/treypujats/C
 CovidDeaths<-as.data.frame(data.table::fread("https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv"))
 himd = as.data.frame(data.table::fread("https://github.com/treypujats/COVID19/blob/master/covid19/data/himd.rda?raw=true"))
 cimd = as.data.frame(data.table::fread("https://github.com/treypujats/COVID19/blob/master/covid19/data/cimd.rda?raw=true"))
+
+#Updating data frames to ensure they are filled and match the data we reference later in the scripts
 colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 colnames(CovidDeaths)[1]<-"CountyFIPS"
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
 CovidConfirmedCases[is.na(CovidConfirmedCases)]<-0
+CovidDeaths[is.na(CovidDeaths)]<-0
 colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 
 
@@ -101,14 +129,8 @@ NationalDataTable$`Cases Per 1000 People`<-round(NationalDataTable$`Total Cases`
 
 
 
-
-
-
-
-
-
-
-
+#Step Three
+###################################################################################################################################################
 
 # Establish Local Counties ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -121,7 +143,6 @@ CalculateCounties<-function(ChosenBase, Radius, IncludedCounties){
 
 
 # Create Numerical Statistics for the dashboard -------------------------------------------------------------------------------------------------------------------------------------
-
 
 # Finds Covid Cases and statistics on covid per county
 CalculateCovid<-function(ChosenBase, Radius, IncludedCounties){
@@ -193,8 +214,6 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
         ) +
         theme(axis.line = element_line(color = "black"))+
         theme(legend.position = "top")
-    
-    
 }
 
 
@@ -232,7 +251,6 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
         ) +
         theme(axis.line = element_line(color = "black"))+
         theme(legend.position = "top")
-    
 }
 
 

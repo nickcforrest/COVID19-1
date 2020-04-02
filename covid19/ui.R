@@ -1,3 +1,18 @@
+##########################
+##### User Interface #####
+##########################
+
+# Layout
+##############################################################################################################################################
+# The User Interface generates the visual of the application. It establishes location and layout of all outputs and inputs from server and user
+# First:  The dashboard header shows the main title and introduction to the application
+# Second: The sidebar shows all inputs that the user can change
+# Third:  The body provides all visual outputs, statistics, and charts. It is updated every time a user changes the inputs
+##############################################################################################################################################     
+
+
+
+
 # Begin User Interface ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -6,6 +21,9 @@
 #Establishes the layout of the overall dashboard and how items are displayed
 ui <- tagList(
     dashboardPage(skin = "black",
+                  
+# Step One - Header
+###################################################################################################################################################
                   dashboardHeader(title = "COVID-19 Risk Dashboard",
                                   titleWidth = 300,
                                   dropdownMenu(
@@ -19,6 +37,9 @@ ui <- tagList(
                                               class = "dropdown")
                                   )
                   ),
+
+# Step Two - Sidebar
+###################################################################################################################################################
                   dashboardSidebar(width = 300, 
                                    sidebarMenu(
                                        selectInput(
@@ -63,7 +84,9 @@ ui <- tagList(
                                    )
                                    
                   ),
-                  
+ 
+# Step Three - Body
+###################################################################################################################################################
                   dashboardBody(
                       tags$head(tags$style(HTML(
                           '.myClass { 
@@ -83,7 +106,8 @@ ui <- tagList(
                                    ')),
                       
                       tabsetPanel(id = "tabs",
-                                  ####### START SUMMARY TAB #######
+
+# Summary Tab -------------------------------------------------------------
                                   tabPanel(
                                       title = "National Summary",
                                       
@@ -94,7 +118,8 @@ ui <- tagList(
                                   ),
                                   ####### END SUMMARY TAB #######
                                   
-                                  ####### START CURRENT LOCAL HEALTH  TAB #######
+
+# Current Local Health ----------------------------------------------------
                                   tabPanel(
                                       title = "Current Local Health",
                                       fluidRow(
@@ -119,7 +144,8 @@ ui <- tagList(
                                   ),
                                   ####### END CURRENT LOCAL HEALTH TAB #######
                                   
-                                  ####### START PROJECTIONS TAB #######
+
+# Local Health Projections ------------------------------------------------
                                   tabPanel(
                                       title = "Local Health Projections",
                                       fluidRow(
@@ -131,7 +157,8 @@ ui <- tagList(
                                   ),
                                   ####### END PROJECTION TAB #######
                                   
-                                  ####### START INSTALLATION HEALTH RISK TAB #######
+
+# Mission Risk ------------------------------------------------------------
                                   tabPanel(
                                       title = "Mission Risk", 
                                       fluidRow(
@@ -144,11 +171,12 @@ ui <- tagList(
                                           box(title = "Chart 2 Here", "Box content")
                                       )
                                   )
-                                  ####### END INSTALLATION HEALTH RISK TAB #######
+                                  ####### END Mission Risk #######
                       )
                   )
     ),
     
+    #The footer is just showing the information on the main contributors to the app
     tags$footer("created by Nick Forrest, Trey Pujats, Garrett Alarcon, James Deitschel", align = "center", style = "
               position:absolute;
               bottom:50;
