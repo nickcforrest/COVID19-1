@@ -160,7 +160,7 @@ ui <- tagList(
 
 # Mission Risk ------------------------------------------------------------
                                   tabPanel(
-                                      title = "Mission Risk", 
+                                      title = "Mission Risk"
 
                                   )
                                   ####### END Mission Risk #######
