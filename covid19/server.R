@@ -290,7 +290,7 @@ server <- function(input, output) {
         showModal(
             modalDialog(
                 size = "l",fade = TRUE, easyClose = TRUE, title = "USER INPUTS",
-                p("Some information"))
+                InfoLink
         )
     })
     observeEvent(input$calcInfo, {
