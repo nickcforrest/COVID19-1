@@ -212,7 +212,7 @@ ui <- tagList(
                       valueBoxOutput("HospUtlzChange", width = 4)
                     ),
                     fluidRow( 
-                      box(plotOutput("IHME_State_Hosp")),
+                      box(plotlyOutput("IHME_State_Hosp")),
                       box(title = "Daily New Cases",plotOutput("LocalHealthPlot1")),
                       box(title = "Total Cases",plotOutput("LocalHealthPlot2"))
                     )
@@ -495,7 +495,7 @@ server <- function(input, output) {
   })
   
   #Create IHME plot by State projected hospitalization 
-  output$IHME_State_Hosp<-renderPlot({
+  output$IHME_State_Hosp<-renderPlotly({
       
     BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
 
@@ -522,7 +522,7 @@ server <- function(input, output) {
     IHME_Region$allbed_lower = round(IHME_State$allbed_lower*BedProp)
     IHME_Region$allbed_upper = round(IHME_State$allbed_upper*BedProp)
     
-    ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
+    r1 <- ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
         geom_line(linetype = "dashed", size = 0.75) +
         geom_ribbon(alpha=0.3, fill = "tan3") + 
         labs(title = paste("IHME Hospitalization Projections for Selected Region"),
@@ -539,7 +539,7 @@ server <- function(input, output) {
               panel.border = element_blank()) +
         scale_x_date(date_breaks = "2 week")
     
-    #ggplotly(r1)
+    ggplotly(r1)
   })
   
   
