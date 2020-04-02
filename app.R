@@ -43,6 +43,7 @@ library(usmap)
 library(data.table)
 library(plyr)
 library(DT)
+library(viridis)
 
 
 
@@ -58,6 +59,7 @@ CovidDeaths<-read.csv("https://usafactsstatic.blob.core.windows.net/public/data/
 colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 colnames(CovidDeaths)[1]<-"CountyFIPS"
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
+CovidConfirmedCases[is.na(CovidConfirmedCases)] <- 0
 
 
 
