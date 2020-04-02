@@ -161,15 +161,7 @@ ui <- tagList(
 # Mission Risk ------------------------------------------------------------
                                   tabPanel(
                                       title = "Mission Risk", 
-                                      fluidRow(
-                                          valueBox(2, subtitle ="Installation Specific Deaths", color= "red",icon = icon("skull")),
-                                          valueBox("85%", subtitle = "Installation Medical Utilization", color = "teal", icon = icon("hospital"))
-                                      ),
-                                      box(status = "primary", width = 13, solidHeader = T, "Current Risk Level: LOW ", align = "center"),
-                                      fluidRow( 
-                                          box(title = "Chart 1 Here", "Box content"),
-                                          box(title = "Chart 2 Here", "Box content")
-                                      )
+
                                   )
                                   ####### END Mission Risk #######
                       )
