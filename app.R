@@ -687,10 +687,18 @@ server <- function(input, output) {
         IHME_Region$allbed_lower = round(IHME_State$allbed_lower*BedProp)
         IHME_Region$allbed_upper = round(IHME_State$allbed_upper*BedProp)
         
+        maxProjInd <- which.max(IHME_Region$allbed_mean)
+        maxProj <- IHME_Region$allbed_mean[maxProjInd]
+        maxProjDate <- IHME_Region$date[maxProjInd]
+        
         r1 <- ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
             geom_line(linetype = "dashed", size = 0.75) +
             geom_ribbon(alpha=0.3, fill = "tan3") + 
-            labs(title = paste("IHME Hospitalization Projections for Selected Region"),
+            annotate("text",
+                     x = maxProjDate,
+                     y = maxProj * 1.2,
+                     label = paste("Peak: ", toString(maxProjDate)," with ", toString(maxProj), " beds used", sep = "")) +
+            labs(title = paste("IHME Hospitalization Projections"),
                  x = "Date", y = "Projected Daily Hospitalizations") +
             theme_bw() +
             theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
