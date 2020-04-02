@@ -21,7 +21,8 @@ pacman::p_load(dplyr,
                data.table,
                plyr,
                choroplethr,
-               choroplethrMaps
+               choroplethrMaps,
+               plotly
 )
 
 # library(dplyr)
@@ -59,7 +60,7 @@ temp <- tempfile()
 download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
 filename = paste(format(as.Date(Sys.Date()-1), "%Y"), "_",
                  format(as.Date(Sys.Date()-1), "%m"), "_",
-                 format(as.Date(Sys.Date()-1), "%d"), ".1",
+                 format(as.Date(Sys.Date()-1), "%d"), ".2",
                  "/Hospitalization_all_locs.csv",
                  sep = "")
 unzip(temp, files = filename)
@@ -495,28 +496,50 @@ server <- function(input, output) {
   
   #Create IHME plot by State projected hospitalization 
   output$IHME_State_Hosp<-renderPlot({
+      
     BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
-    
+
+    for (i in 1:7581) {
+        HospitalInfo$DistanceMiles[i]<-(distm(c(BaseState$Long, BaseState$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
+    }
+    IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= input$Radius))
+    IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
+
     IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
     
+    TotalBedsCounty <- sum(IncludedHospitals$BEDS)
     
-    ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
-      geom_line(linetype = "dashed", size = 1) +
-      geom_ribbon(alpha=0.3, fill = "tan3") + 
-      labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), sep = ""), 
-           x = "Date", 
-           y = "Projected Daily Hospitalizations") +
-      theme_bw() +
-      theme(plot.title = element_text(face = "bold", size = 18, family = "sans"),
-            axis.title = element_text(face = "bold", size = 11, family = "sans"),
-            axis.text.x = element_text(angle = 60, hjust = 1), 
-            axis.line = element_line(color = "black"),
-            legend.position = "top",
-            plot.background = element_blank(),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank()) +
-      scale_x_date(date_breaks = "2 week")
+    # Get total hospital bed number across state
+    IncludedHospitalsST <- dplyr::filter(HospitalInfo, STATE == toString(BaseState$State[1]))
+    TotalBedsState <- sum(IncludedHospitalsST$BEDS)
+    
+    # Calculate bed ratio
+    BedProp <- TotalBedsCounty/TotalBedsState
+    
+    # Apply ratio's to IHME data
+    IHME_Region <- IHME_State
+    IHME_Region$allbed_mean = round(IHME_State$allbed_mean*BedProp)
+    IHME_Region$allbed_lower = round(IHME_State$allbed_lower*BedProp)
+    IHME_Region$allbed_upper = round(IHME_State$allbed_upper*BedProp)
+    
+    ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
+        geom_line(linetype = "dashed", size = 0.75) +
+        geom_ribbon(alpha=0.3, fill = "tan3") + 
+        labs(title = paste("IHME Hospitalization Projections for Selected Region"),
+             x = "Date", y = "Projected Daily Hospitalizations") +
+        theme_bw() +
+        theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+              axis.title = element_text(face = "bold", size = 11, family = "sans"),
+              axis.text.x = element_text(angle = 60, hjust = 1), 
+              axis.line = element_line(color = "black"),
+              legend.position = "top",
+              plot.background = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank()) +
+        scale_x_date(date_breaks = "2 week")
+    
+    #ggplotly(r1)
   })
   
   
