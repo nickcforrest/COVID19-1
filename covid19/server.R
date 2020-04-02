@@ -120,9 +120,9 @@ server <- function(input, output) {
         MyHospitals<-GetHospitals()
         
         #Finds number of hospitals in radius
-        TotalBeds<-sum(IncludedHospitals$BEDS)
+        TotalBeds<-sum(MyHospitals$BEDS)
         #Finds which counties in given radius. Also Give county statistics
-        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+        CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
         changeC <- sum(rev(CovidCounties)[,1] - rev(CovidCounties)[,2])
         TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
         NotHospital<-sum(rev(CovidCounties)[,7])
