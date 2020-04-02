@@ -1,5 +1,3 @@
-
-
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
@@ -44,6 +42,8 @@ library(usmap)
 library(data.table)
 library(plyr)
 library(DT)
+library(plotly)
+library(mapproj)
 library(viridis)
 
 
@@ -60,7 +60,7 @@ CovidDeaths<-read.csv("https://usafactsstatic.blob.core.windows.net/public/data/
 colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 colnames(CovidDeaths)[1]<-"CountyFIPS"
 HospitalInfo$BEDS <- ifelse(HospitalInfo$BEDS < 0, 0, HospitalInfo$BEDS)
-CovidConfirmedCases[is.na(CovidConfirmedCases)] <- 0
+CovidConfirmedCases[is.na(CovidConfirmedCases)]<-0
 
 
 
@@ -182,16 +182,16 @@ ui <- tagList(
                                                        value = 60)
                                        ),
                                        br(),
-                                       actionButton("refresh", "Refresh", width = "90%"),
+                                       #actionButton("refresh", "Refresh", width = "90%"),
                                        hr(),
                                        fluidRow(
-                                           valueBox("LOW RISK", subtitle ="Mission Risk",color= "green",width = 12)
+                                           valueBox("LOW RISK", subtitle ="Mission Risk **notional ex.**",color= "green",width = 12)
                                        ),
                                        fluidRow(
-                                           valueBox("MEDIUM RISK", subtitle ="Installation Health Risk",color= "yellow", width = 12)
+                                           valueBox("MEDIUM RISK", subtitle ="Installation Health Risk **notional ex.**",color= "yellow", width = 12)
                                        ),
                                        fluidRow(
-                                           valueBox("HIGH RISK", subtitle ="Local Health Risk",color= "red",width = 12)
+                                           valueBox("HIGH RISK", subtitle ="Local Health Risk **notional ex.**",color= "red",width = 12)
                                        )
                                    )
                                    
@@ -200,31 +200,30 @@ ui <- tagList(
                   dashboardBody(
                       tags$head(tags$style(HTML(
                           '.myClass { 
-        font-size: 20px;
-        line-height: 50px;
-        text-align: left;
-        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-        padding: 0 15px;
-        overflow: hidden;
-        color: white;
-        }
-        '))),
+                    font-size: 20px;
+                    line-height: 50px;
+                    text-align: left;
+                    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+                    padding: 0 15px;
+                    overflow: hidden;
+                    color: white;
+                    }
+                    '))),
                       tags$script(HTML('
-                       $(document).ready(function() {
-                       $("header").find("nav").append(\'<span class="myClass"> Tailored Risk Assesments </span>\');
-                       })
-                       ')),
+                                   $(document).ready(function() {
+                                   $("header").find("nav").append(\'<span class="myClass"> WASH YOUR HANDS </span>\');
+                                   })
+                                   ')),
                       
                       tabsetPanel(id = "tabs",
                                   ####### START SUMMARY TAB #######
                                   tabPanel(
-                                      title = "Summary",
-                                      fluidRow( 
-                                          box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot"))
-                                      ),
-                                      fluidRow( 
-                                          box(title = "National Statistics", solidHeader=T, align = "left", column(width = 12, DT::dataTableOutput("NationalDataTable1"), style = "height:240px;overflow-y: scroll;overflow-x:scroll"))
-                                      )
+                                      title = "National Summary",
+                                      
+                                      box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot"),width = 13),
+                                      
+                                      box(title = "National Statistics", solidHeader=T, align = "left", column(width = 12, DT::dataTableOutput("NationalDataTable1"), style = "height:240px;overflow-y: scroll;overflow-x:scroll"),width = 13)
+                                      
                                   ),
                                   ####### END SUMMARY TAB #######
                                   
@@ -260,14 +259,14 @@ ui <- tagList(
                                           valueBoxOutput("TotalPopulation")
                                       ),
                                       fluidRow(
-                                          box(plotOutput("IHME_State_Hosp",height = 400)),
+                                          box(plotlyOutput("IHME_State_Hosp",height = 400)),
                                           box("insert CHIME projections here",height = 400))
                                   ),
                                   ####### END PROJECTION TAB #######
                                   
                                   ####### START INSTALLATION HEALTH RISK TAB #######
                                   tabPanel(
-                                      title = "Installation Health", 
+                                      title = "Mission Risk", 
                                       fluidRow(
                                           valueBox(2, subtitle ="Installation Specific Deaths", color= "red",icon = icon("skull")),
                                           valueBox("85%", subtitle = "Installation Medical Utilization", color = "teal", icon = icon("hospital"))
@@ -283,15 +282,15 @@ ui <- tagList(
                   )
     ),
     
-    tags$footer("created by the 4 AFITeers", align = "center", style = "
-            position:absolute;
-            bottom:50;
-            width:100%;
-            height:25px;   /* Height of the footer */
-            color: grey;
-            padding: 0px;
-            background-color: transparent;
-            z-index: 1000;")
+    tags$footer("created by Nick Forrest, Trey Pujats, Garrett Alarcon, James Deitschel", align = "center", style = "
+              position:absolute;
+              bottom:50;
+              width:100%;
+              height:25px;   /* Height of the footer */
+              color: grey;
+              padding: 0px;
+              background-color: transparent;
+              z-index: 1000;")
 )
 #Close UI  
 ###############################
@@ -454,14 +453,14 @@ PlotLocalChoro<-function(IncludedCounties, ChosenBase){
         geom_polygon(aes(fill = log(Cases))) +
         coord_fixed() +
         theme_minimal() +
-        ggtitle("Covid Cases by County") +
+        ggtitle("COVID-19 Cases by County") +
         geom_label(label= BaseStats$Base,data = BaseStats, aes(x=Long, y=Lat, group = 1),
                    color = 'black', size = 4, vjust = -1)+
         geom_point(data = BaseStats, aes(x=Long, y=Lat, group = 1),
-                   color = 'black', size = 10)+
+                   color = 'red', size = 5)+
         theme(axis.line = element_blank(), axis.text = element_blank(),
               axis.ticks = element_blank(), axis.title = element_blank()) +
-        scale_fill_viridis("magma")
+        scale_fill_viridis("log(Cases)")
     
     plot(PlotCovidLocal)
 }
@@ -473,9 +472,9 @@ PlotLocalChoro<-function(IncludedCounties, ChosenBase){
 # Define server logic, this is where all plots are generated. 
 server <- function(input, output) {
     
-
-# Establish the Hospitals and counties within range ---------------------------------------------------------------------------------------------------------------------------------
-
+    
+    # Establish the Hospitals and counties within range ---------------------------------------------------------------------------------------------------------------------------------
+    
     
     GetCounties<-reactive({
         BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
@@ -498,10 +497,10 @@ server <- function(input, output) {
     })
     
     
-
-# Output common statistics ------------------------------------------------
-
-#Finds which counties in given radius. Also Give county statistics
+    
+    # Output common statistics ------------------------------------------------
+    
+    #Finds which counties in given radius. Also Give county statistics
     output$TotalPopulation <- renderValueBox({
         MyCounties<-GetCounties()
         valueBox(subtitle = "Total Regional Population",
@@ -511,7 +510,7 @@ server <- function(input, output) {
         
     })
     
-# Finds Covid Cases and statistics on covid per county
+    # Finds Covid Cases and statistics on covid per county
     output$CovidCases <- renderValueBox({
         MyCounties<-GetCounties()
         valueBox(subtitle = "Local Cases",
@@ -522,7 +521,7 @@ server <- function(input, output) {
         
     })
     
-#Outputs change in covid cases per day
+    #Outputs change in covid cases per day
     output$CaseChangeLocal <- renderValueBox({
         MyCounties<-GetCounties()
         CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% MyCounties$FIPS)
@@ -535,7 +534,7 @@ server <- function(input, output) {
     })
     
     
-# Finds Covid deaths and statistics on covid per county
+    # Finds Covid deaths and statistics on covid per county
     output$LocalCovidDeaths <- renderValueBox({
         MyCounties<-GetCounties()
         valueBox(subtitle = "Local Fatalities",
@@ -545,7 +544,7 @@ server <- function(input, output) {
         )
     })
     
-#Outputs change in deaths per day   
+    #Outputs change in deaths per day   
     output$DeathChangeLocal <- renderValueBox({
         MyCounties<-GetCounties()
         CovidCounties<-subset(CovidDeaths, CountyFIPS %in% MyCounties$FIPS)
@@ -557,7 +556,7 @@ server <- function(input, output) {
                  color = "blue")
     })
     
-#Finds hospital information within a given 100 mile radius. Calculates number of total hospital beds. Can compare to number of cases
+    #Finds hospital information within a given 100 mile radius. Calculates number of total hospital beds. Can compare to number of cases
     output$HospitalUtilization <- renderValueBox({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
@@ -567,7 +566,7 @@ server <- function(input, output) {
                  color = "navy")
     })
     
-
+    
     
     output$HospUtlzChange <- renderValueBox({
         MyCounties<-GetCounties()
@@ -605,29 +604,29 @@ server <- function(input, output) {
                  color = "navy")
     })
     
-
-# Output line plots for the dashboard ----------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#Create first plot of local health population 
+    
+    # Output line plots for the dashboard ----------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+    #Create first plot of local health population 
     output$LocalHealthPlot1<-renderPlot({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
         CovidCasesPerDayChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
-#Create second plot of local health population 
+    #Create second plot of local health population 
     output$LocalHealthPlot2<-renderPlot({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
         CovidCasesCumChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
-
-# Output Choropleth Charts ----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#Create Country Plot on Summary page
+    
+    # Output Choropleth Charts ----------------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+    #Create Country Plot on Summary page
     output$SummaryPlot<-renderGvis({
         DF<-cbind.data.frame(CovidConfirmedCases$State, CovidConfirmedCases[,length(CovidConfirmedCases)])
         colnames(DF)<-c("state","Value")
@@ -644,35 +643,58 @@ server <- function(input, output) {
                                   #colorAxis="{colors:'grey', 'red']}",
                                   displayMode="regions", 
                                   resolution="provinces",
-                                  width=600,
-                                  height = 400))
+                                  width=1200,
+                                  height = 600))
     })
-   
-     
-#Creates the local choropleth charts that change based on which base and radius.
+    
+    
+    #Creates the local choropleth charts that change based on which base and radius.
     output$LocalChoroPlot<-renderPlot({
         MyCounties<-GetCounties()
         PlotLocalChoro(MyCounties, input$Base)
     })
     
     
-
-# Output Projections  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
     
-#Create IHME plot by State projected hospitalization 
-    output$IHME_State_Hosp<-renderPlot({
+    # Output Projections  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+    #Create IHME plot by State projected hospitalization 
+    output$IHME_State_Hosp<-renderPlotly({
+        
         BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
+        
+        for (i in 1:7581) {
+            HospitalInfo$DistanceMiles[i]<-(distm(c(BaseState$Long, BaseState$Lat), c(HospitalInfo$LONGITUDE[i], HospitalInfo$LATITUDE[i]), fun = distHaversine)/1609.34)
+        }
+        IncludedHospitals<-dplyr::filter(HospitalInfo, (DistanceMiles <= input$Radius))
+        IncludedHospitals<-dplyr::filter(IncludedHospitals, (TYPE=="GENERAL ACUTE CARE") | (TYPE=="CRITICAL ACCESS"))
+        
         IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
-        ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
-            geom_line(linetype = "dashed", size = 1) +
+        
+        TotalBedsCounty <- sum(IncludedHospitals$BEDS)
+        
+        # Get total hospital bed number across state
+        IncludedHospitalsST <- dplyr::filter(HospitalInfo, STATE == toString(BaseState$State[1]))
+        TotalBedsState <- sum(IncludedHospitalsST$BEDS)
+        
+        # Calculate bed ratio
+        BedProp <- TotalBedsCounty/TotalBedsState
+        
+        # Apply ratio's to IHME data
+        IHME_Region <- IHME_State
+        IHME_Region$allbed_mean = round(IHME_State$allbed_mean*BedProp)
+        IHME_Region$allbed_lower = round(IHME_State$allbed_lower*BedProp)
+        IHME_Region$allbed_upper = round(IHME_State$allbed_upper*BedProp)
+        
+        r1 <- ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
+            geom_line(linetype = "dashed", size = 0.75) +
             geom_ribbon(alpha=0.3, fill = "tan3") + 
-            labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), " Region", sep = ""), 
-                 x = "Date", 
-                 y = "Projected Daily Hospitalizations") +
+            labs(title = paste("IHME Hospitalization Projections for Selected Region"),
+                 x = "Date", y = "Projected Daily Hospitalizations") +
             theme_bw() +
-            theme(plot.title = element_text(face = "bold", size = 18, family = "sans"),
-                  axis.title = element_text(face = "bold",size = 11,family = "sans"),
+            theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+                  axis.title = element_text(face = "bold", size = 11, family = "sans"),
                   axis.text.x = element_text(angle = 60, hjust = 1), 
                   axis.line = element_line(color = "black"),
                   legend.position = "top",
@@ -681,19 +703,21 @@ server <- function(input, output) {
                   panel.grid.minor = element_blank(),
                   panel.border = element_blank()) +
             scale_x_date(date_breaks = "2 week")
+        
+        ggplotly(r1)
     })
     
-   
-
-        
     
-
-# Output any data tables ------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    
+    
+    
+    
+    # Output any data tables ------------------------------------------------------------------------------------------------------------------------------------------------------
+    
     
     #Render National Data Table on summary page
     output$NationalDataTable1<-DT::renderDataTable({
-        NationalDataTable <- DT::datatable(data.frame(NationalDataTable),rownames = FALSE, options = list(dom = 't',ordering = F))
+        NationalDataTable <- DT::datatable(data.frame(NationalDataTable),rownames = FALSE, options = list(dom = 'ft',ordering = F,"pageLength" = 51))
         NationalDataTable
         
     })
@@ -706,7 +730,7 @@ server <- function(input, output) {
     })
     
     
-
+    
     
     
     
@@ -747,5 +771,3 @@ server <- function(input, output) {
 ##########################################
 # Run the application 
 shinyApp(ui, server)
-
-
