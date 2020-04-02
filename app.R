@@ -180,18 +180,43 @@ ui <- tagList(
                        ')),
       
       tabsetPanel(id = "tabs",
-                  ####### START OVERALL RISK TAB #######
+                  ####### START SUMMARY TAB #######
                   tabPanel(
                     title = "Summary",
                     fluidRow( 
                       box(title = "National Impact Map",solidHeader = T, align = "center", htmlOutput("SummaryPlot"))
                     ),
                     fluidRow( 
-                        box(title = "National Statistics", solidHeader=T, align = "left", DT::dataTableOutput("NationalDataTable1", width = 100))
-                        
+                      box(title = "National Statistics", solidHeader=T, align = "left", DT::dataTableOutput("NationalDataTable1", width = 100))
+                      
                     )
                   ),
-                  ####### END OVERALL RISK TAB #######
+                  ####### END SUMMARY TAB #######
+                  
+                  ####### START CURRENT LOCAL HEALTH  TAB #######
+                  tabPanel(
+                    title = "Current Local Health",
+                    fluidRow(
+                      # A static valueBox
+                      valueBoxOutput("CovidCases"),
+                      valueBoxOutput("LocalCovidDeaths"),
+                      valueBoxOutput("HospitalUtilization")
+                    ),
+                    fluidRow(
+                      valueBoxOutput("CaseChangeLocal", width = 4),
+                      valueBoxOutput("DeathChangeLocal", width = 4),
+                      valueBoxOutput("HospUtlzChange", width = 4)
+                    ),
+                    fluidRow( 
+                      box(title = "Daily Reports",plotOutput("LocalHealthPlot1",height = 300)),
+                      box(title = "Total Reports",plotOutput("LocalHealthPlot2",height = 300))
+                    ),
+                    fluidRow(
+                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250),height = 300),
+                      box(title = "Local County Statistics", solidHeader=T, align = "left", column(width = 12, DT::dataTableOutput("CountyDataTable1"), style = "height:240px;overflow-y: scroll"), height = 300)
+                    )
+                  ),
+                  ####### END LOCAL HEALTH RISK TAB #######
                   
                   ####### START PROJECTIONS TAB #######
                   tabPanel(
@@ -201,13 +226,10 @@ ui <- tagList(
                     ),
                     fluidRow(
                       box(plotOutput("IHME_State_Hosp",height = 400)),
-                      box(title = "Local Impact Map", plotOutput("CountySummary", height = 250))
-                    ),
-                    fluidRow(
-                        box(title = "Local County Statistics", solidHeader=T, align = "left", DT::dataTableOutput("CountyDataTable1", width = 100))
+                      box("insert CHIME projections here",height = 400))
                     )
                   ),
-                  ####### END MISSION RISK TAB #######
+                  ####### END PROJECTION TAB #######
                   
                   ####### START INSTALLATION HEALTH RISK TAB #######
                   tabPanel(
@@ -221,29 +243,10 @@ ui <- tagList(
                       box(title = "Chart 1 Here", "Box content"),
                       box(title = "Chart 2 Here", "Box content")
                     )
-                  ),
+                  )
                   ####### END INSTALLATION HEALTH RISK TAB #######
                   
-                  ####### START LOCAL HEALTH RISK TAB #######
-                  tabPanel(
-                    title = "Local Health",
-                    fluidRow(
-                      # A static valueBox
-                      valueBoxOutput("CovidCases"),
-                      valueBoxOutput("LocalCovidDeaths"),
-                      valueBoxOutput("HospitalUtilization")
-                    ),
-                    fluidRow(
-                      valueBoxOutput("CaseChangeLocal", width = 4),
-                      valueBoxOutput("DeathChangeLocal", width = 4),
-                      valueBoxOutput("HospUtlzChange", width = 4)
-                    ),
-                    fluidRow( 
-                      box(title = "Daily New Cases",plotOutput("LocalHealthPlot1",height = 300)),
-                      box(title = "Total Cases",plotOutput("LocalHealthPlot2",height = 300))
-                    )
-                  )
-                  ####### END LOCAL HEALTH RISK TAB #######
+
       )
                        )
       ),
@@ -259,6 +262,8 @@ ui <- tagList(
   )
 #Close UI  
 ###############################
+
+
 CalculateCounties<-function(ChosenBase, Radius, IncludedCounties){
   #Finds which counties in given radius. Also Give county statistics
   TotalPopulation <-  sum(IncludedCounties$Population)
@@ -318,7 +323,7 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
   
   ForecastDate<- seq(as.Date("2020-02-15"), length=(length(DailyNewDeaths)), by="1 day")
   Chart1Data<-cbind.data.frame(ForecastDate,DailyNewCases,DailyNewHospitalizations,DailyNewDeaths)
-  colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Deaths")
+  colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Fatalities")
   Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
   
   #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
@@ -361,7 +366,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
   
   ForecastDate<- seq(as.Date("2020-02-15"), length=(length(CumDailyDeaths)), by="1 day")
   Chart2Data<-cbind.data.frame(ForecastDate,CumDailyCovid,CumHospitalizations,CumDailyDeaths)
-  colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Deaths")
+  colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Fatalities")
   Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
   
   #Plot the forecasts from above but include the actual values from the test data to compare accuracy.
@@ -387,12 +392,12 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
 
 #Create Data Table for local statistics
 GetLocalDataTable<-function(IncludedCounties){
-    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-    DeathCounties<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
-    CountyDataTable<-cbind(IncludedCounties,rev(CovidCounties)[,1],rev(DeathCounties)[,1])
-    CountyDataTable<-data.frame(CountyDataTable$State,CountyDataTable$County,CountyDataTable$Population, rev(CountyDataTable)[,2], rev(CountyDataTable)[,1])
-    colnames(CountyDataTable)<-c("State","County","Population","Total Confirmed Cases","Total Deaths" )
-    CountyDataTable
+  CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+  DeathCounties<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
+  CountyDataTable<-cbind(IncludedCounties,rev(CovidCounties)[,1],rev(DeathCounties)[,1])
+  CountyDataTable<-data.frame(CountyDataTable$State,CountyDataTable$County,CountyDataTable$Population, rev(CountyDataTable)[,2], rev(CountyDataTable)[,1])
+  colnames(CountyDataTable)<-c("State","County","Population","Total Confirmed Cases","Total Fatalities" )
+  CountyDataTable
 }
 
 # CovidCountyChoropleth<-function(ChosenBase, Radius){
@@ -420,6 +425,7 @@ GetLocalDataTable<-function(IncludedCounties){
 ##########################################
 # Define server logic, this is where all plots are generated. 
 server <- function(input, output) {
+  
   
   GetCounties<-reactive({
     BaseStats<-dplyr::filter(AFBaseLocations, Base == input$Base)
@@ -464,7 +470,7 @@ server <- function(input, output) {
   # Finds Covid Cases and statistics on covid per county
   output$LocalCovidDeaths <- renderValueBox({
     MyCounties<-GetCounties()
-    valueBox(subtitle = "Local Deaths",
+    valueBox(subtitle = "Local Fatalities",
              comma(CalculateDeaths(input$Base, input$Radius, MyCounties)),
              icon = icon("skull"),
              color = "red"
@@ -512,7 +518,7 @@ server <- function(input, output) {
                               #colorAxis="{colors:'grey', 'red']}",
                               displayMode="regions", 
                               resolution="provinces",
-                              width=800,
+                              width=600,
                               height = 400))
     
   })
@@ -541,9 +547,9 @@ server <- function(input, output) {
     ggplot(data=IHME_State, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
       geom_line(linetype = "dashed", size = 1) +
       geom_ribbon(alpha=0.3, fill = "tan3") + 
-        labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), " Region", sep = ""), 
-             x = "Date", 
-             y = "Projected Daily Hospitalizations") +
+      labs(title = paste("IHME Hospitalization Projections for ",toString(BaseState$State[1]), " Region", sep = ""), 
+           x = "Date", 
+           y = "Projected Daily Hospitalizations") +
       theme_bw() +
       theme(plot.title = element_text(face = "bold", size = 18, family = "sans"),
             axis.title = element_text(face = "bold",size = 11,family = "sans"),
@@ -576,7 +582,7 @@ server <- function(input, output) {
     changeC <- sum(CovidCounties[x] - CovidCounties[x-1])
     
     valueBox(paste("+",toString(changeC)),
-             subtitle = "New Confirmed Deaths", 
+             subtitle = "New Confirmed Fatalities", 
              color = "red")
   })
   
@@ -622,16 +628,17 @@ server <- function(input, output) {
   
   
   #Render National Data Table on summary page
-  output$NationalDataTable1<-DT::renderDataTable({data.frame(NationalDataTable)
-                            NationalDataTable
-                            
+  output$NationalDataTable1<-DT::renderDataTable({
+    NationalDataTable <- DT::datatable(data.frame(NationalDataTable),rownames = FALSE, options = list(dom = 't',ordering = F))
+    NationalDataTable
+    
   })
   
   output$CountyDataTable1<-DT::renderDataTable({
-      MyCounties<-GetCounties()
-      dt<-GetLocalDataTable(MyCounties)
-      dt<-DT::datatable(dt, rownames = FALSE, options = list(dom = 't',ordering = F))
-      dt
+    MyCounties<-GetCounties()
+    dt<-GetLocalDataTable(MyCounties)
+    dt<-DT::datatable(dt, rownames = FALSE, options = list(dom = 't',ordering = F))
+    dt
   })
   
   
