@@ -297,14 +297,14 @@ server <- function(input, output) {
         showModal(
             modalDialog(
                 size = "l",fade = TRUE, easyClose = TRUE, title = "CALCULATIONS",
-                p("Some information"))
+                CalcLink
         )
     })
     observeEvent(input$sourceInfo, {
         showModal(
             modalDialog(
                 size = "l",fade = TRUE, easyClose = TRUE, title = "SOURCES",
-                p("Some information"))
+                SourceLink
         )
     })  
     
