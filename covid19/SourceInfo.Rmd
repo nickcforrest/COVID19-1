@@ -7,6 +7,7 @@ output: html_document
 *This section references the data collected, the sources of collection, and the data manipulation.*  
 
 **Data Collection**: 
+
 1. Confirmed Cases of COVID-19
 2. Confirmed deaths from COVID-19
 3. Air Force base name, MAJCOM, location, and state
@@ -15,6 +16,7 @@ output: html_document
 6. Distance matrices for counties and hospitals related to each CONUS Air Force installation (preemptively created for this analysis)
 
 **Data Sources**: 
+
 1. usafacts.org : This website provides daily updated information every morning of cases and deaths from the coronavirus. The data does not include secondary effects such as deaths from lack of treatment due to hospital capacity, rather it only included deaths of individuals with COVID-19. 
 
 2. https://covid19.healthdata.org/projections : This website provided the data necessary to project the number of hospitalizations caused by COVID-19 for the local population. The model assumes full social distancing as a best case scenario and provides confidence regions determined by the uncertainty in the model inputs. 
@@ -22,5 +24,6 @@ output: html_document
 3. https://github.com/treypujats/COVID19 : This website provides data regarding Air Force installation data, US county data, hospital data, and distance matrices between hospitals and bases as well as counties and bases. The Air Force installation data, US county data, and hospital data are pulled from Major Adam Messer's github account and stored locally to ensure no changes are made to the file path or data. Thank you Major Messer for providing data and helping us get statrted with the analysis. 
 
 **Data Manipulation**: 
+
 1. Distance matrices: Distance matrices were created to limit the local area around an installation. Major Freels (AFIT) helped build these matrices to measure relative mileage distance between base and county as well as base and hospital. The distances are calculated using geospatial coordinates (latitude, longitude) to measure distance and store in a matrix.
 

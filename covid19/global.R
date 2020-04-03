@@ -303,6 +303,6 @@ PlotLocalChoro<-function(IncludedCounties, ChosenBase){
  # Identify Info Pages
  #Inputs
 InfoLink <- includeMarkdown("https://raw.githubusercontent.com/treypujats/COVID19/master/covid19/InputsInfo.Rmd")
-CalcLink <- includeMarkdown("https://raw.githubusercontent.com/treypujats/COVID19/master/covid19/InputsInfo.Rmd")
-SourceLink <- includeMarkdown("https://raw.githubusercontent.com/treypujats/COVID19/master/covid19/InputsInfo.Rmd")
+CalcLink <- includeMarkdown("https://raw.githubusercontent.com/treypujats/COVID19/master/covid19/CalcInfo.Rmd")
+SourceLink <- includeMarkdown("https://raw.githubusercontent.com/treypujats/COVID19/master/covid19/SourceInfo.Rmd")
 

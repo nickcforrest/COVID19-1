@@ -9,11 +9,11 @@ output: html_document
 ### Primary Inputs
 *These are the essential input options to present the user with a proper dashboard for their AF installation.*  
 
-**Installation**: Select the installation of interest from the drop-down box. Options include all United States active duty, air national guard, and air force reserve installations.
+1. **Installation**: Select the installation of interest from the drop-down box. Options include all United States active duty, air national guard, and air force reserve installations.
 
-**Local Radius**: How large of an area around the installation is considered. Ranges from 10 - 100 miles with a default of 25 miles. Data from all counties within that range will be considered in the calculations, idependent of the specific state that the installation resides. 
+2. **Local Radius**: How large of an area around the installation is considered. Ranges from 10 - 100 miles with a default of 25 miles. Data from all counties within that range will be considered in the calculations, idependent of the specific state that the installation resides. 
 
 ### Extra Inputs
 *Consists of additional user input options that can be used to further customize dashboard assessments.*
 
-**Percent Social Distancing Reduction:**  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.
+1. **Percent Social Distancing Reduction:**  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.
