@@ -1,6 +1,6 @@
 # COVID19
 
-***** To run the app, go to covid19, download the files, and run the code *****
+***** To run the app, go to covid19, download the files, and run the code from the global.R file *****
 
 The most up to date app is located in the covid19 folder. This folder contains a global.R, server.R, and ui.R file. 
 These files contain the most up to date CHAD application. Ensure you have all packages installed and loaded.
