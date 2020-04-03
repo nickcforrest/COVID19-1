@@ -79,7 +79,10 @@ ui <- tagList(
                                            valueBox("MEDIUM RISK", subtitle ="Installation Health Risk **notional ex.**",color= "yellow", width = 12)
                                        ),
                                        fluidRow(
-                                           valueBox("HIGH RISK", subtitle ="Local Health Risk **notional ex.**",color= "red",width = 12)
+                                           valueBox("HIGH RISK", subtitle ="Local Health Risk **notional ex.**",color= "red",width = 12),
+                                           radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
+                                                        inline = TRUE),
+                                           downloadButton('downloadReport', label = "Download Report", )
                                        )
                                    )
                                    

@@ -278,6 +278,23 @@ server <- function(input, output) {
         dt
     })
     
+    
+
+# Output Report ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    # output$downloadReport <- downloadHandler(
+    #     filename = "rendered_report.pdf",
+    #     content = function(file) {
+    #         res <- rmarkdown::render(
+    #             "template.Rmd",
+    #             params = list(
+    #                 draw_plot = draw_plot
+    #             )
+    #         )
+    #         file.rename(res, file)
+    #     }
+    # )
+    
 
     
     
