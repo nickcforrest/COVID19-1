@@ -30,6 +30,7 @@
 # )
 
 #USE THIS IF YOU HAVE THE PACKAGES INSTALLED AND WANT TO LOAD LIBRARIES QUICKER
+library(plyr)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
@@ -40,7 +41,7 @@ library(scales)
 library(googleVis)
 library(usmap)
 library(data.table)
-library(plyr)
+library(grid)
 library(DT)
 library(plotly)
 library(mapproj)
@@ -694,16 +695,17 @@ server <- function(input, output) {
         r1 <- ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
             geom_line(linetype = "dashed", size = 0.75) +
             geom_ribbon(alpha=0.3, fill = "tan3") + 
-            annotate("text",
-                     x = maxProjDate,
-                     y = maxProj * 1.2,
-                     label = paste("Peak: ", toString(maxProjDate)," with ", toString(maxProj), " beds used", sep = "")) +
-            labs(title = paste("IHME Hospitalization Projections"),
+            # annotate("text",
+            #          x = max(IHME_Region$date),
+            #          y = max(IHME_Region$allbed_upper),
+            #          label = paste("Peak: ", toString(maxProj), " beds used", " on", toString(maxProjDate),  sep = ""),
+            #          hjust = 2) +
+            labs(title = "IHME Hospitalization Projections",
                  x = "Date", y = "Projected Daily Hospitalizations") +
             theme_bw() +
-            theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+            theme(plot.title = element_text(face = "bold", size = 15, family = "sans", hjust = 0.5),
                   axis.title = element_text(face = "bold", size = 11, family = "sans"),
-                  axis.text.x = element_text(angle = 60, hjust = 1), 
+                  axis.text.x = element_text(angle = 60, hjust = 20), 
                   axis.line = element_line(color = "black"),
                   legend.position = "top",
                   plot.background = element_blank(),
