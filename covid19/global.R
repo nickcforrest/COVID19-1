@@ -78,9 +78,9 @@ colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 #Read in IHME data for projecting data in the future
 temp <- tempfile()
 download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-filename = paste(format(as.Date(Sys.Date()-2), "%Y"), "_",
-                 format(as.Date(Sys.Date()-2), "%m"), "_",
-                 format(as.Date(Sys.Date()-2), "%d"), ".2",
+filename = paste(format(as.Date(Sys.Date()-3), "%Y"), "_",
+                 format(as.Date(Sys.Date()-3), "%m"), "_",
+                 format(as.Date(Sys.Date()-3), "%d"), ".2",
                  "/Hospitalization_all_locs.csv",
                  sep = "")
 
