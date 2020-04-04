@@ -229,8 +229,7 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
 CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
     
-    #Find counties and hospitals in radius
-    TotalBeds<-sum(IncludedHospitals$BEDS)
+    #Find counties in radius
     CovidCountiesCases<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     
@@ -240,8 +239,8 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
     DailyNewCases<-VectDailyCovid[2:length(VectDailyCovid)] -
                    VectDailyCovid[1:(length(VectDailyCovid)-1)]
     
-    #Estimation for new hospitalizations based on CDC planning factors
-    DailyNewHospitalizations<-ceiling(DailyNewCases*.055)
+    #Estimation for new hospitalizations
+    DailyNewHospitalizations<-ceiling(DailyNewCases*.1)
     
     #Find New Deaths
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
@@ -255,7 +254,7 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
     colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Fatalities")
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
     
-    #plot for local area daily cases
+    #Plot for local area daily cases, hospitalizations, and deaths
     p1 <- ggplot(Chart1DataSub) + 
           geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
           scale_colour_manual(values=c("Blue", "Orange", "Red")) +
@@ -272,7 +271,6 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
               legend.position = "top") +
           labs(color='')
           
-    
     ggplotly(p1)
 }
 
@@ -280,37 +278,40 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
 
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
 CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
-    #Finds number of hospitals in radius
-    TotalBeds<-sum(IncludedHospitals$BEDS)
-    #Finds which counties in given radius. Also Give county statistics
-    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-    CumDailyCovid<-colSums(CovidCounties[,29:length(CovidCounties)])
-    CumHospitalizations<-ceiling(CumDailyCovid*.26)
-    #Find New Deaths
+    
+    #Find counties in radius
+    CovidCountiesCases<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
+    
+    #Compute cumlative cases and deaths in selected counties
+    CumDailyCovid<-colSums(CovidCountiesCases[,29:length(CovidCountiesCases)])
     CumDailyDeaths<-colSums(CovidCountiesDeath[29:ncol(CovidCountiesDeath)])
+    
+    #Estimation for total hospitalizations
+    CumHospitalizations<-ceiling(CumDailyCovid*0.1)
+    
     #Clean up the dataset to get ready to plot it
     ForecastDate<- seq(as.Date("2020-02-15"), length=(length(CumDailyDeaths)), by="1 day")
     Chart2Data<-cbind.data.frame(ForecastDate,CumDailyCovid,CumHospitalizations,CumDailyDeaths)
     colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Fatalities")
     Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
-    #plot for local area cumulative cases
-    p2 <- ggplot(Chart2DataSub,height = 250) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
+    
+    #Plot for local area cumulative cases
+    p2 <- ggplot(Chart2DataSub,height = 250) + 
+          geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
-        theme(text = element_text(size = 15)) +
-        theme(plot.title = element_text(hjust = 0.5))+
-        labs(color='')+
-        theme_bw()+
-        theme(
-            plot.background = element_blank()
-            ,panel.grid.major = element_blank()
-            ,panel.grid.minor = element_blank()
-            ,panel.border = element_blank()
-        ) +
-        theme(axis.line = element_line(color = "black"))+
-        theme(legend.position = "top")
+        theme_bw() + 
+        theme(text = element_text(size = 11),
+              plot.title = element_text(hjust = 0.5),
+              panel.background = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              axis.line = element_line(color = "black"),
+              legend.position = "top") +
+        labs(color='')
     
     ggplotly(p2)
 }
