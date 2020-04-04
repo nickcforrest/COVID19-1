@@ -144,7 +144,7 @@ ui <- tagList(
                                   ),
                                   ####### END CURRENT LOCAL HEALTH TAB #######
                                   
-                                  
+                                  ####### BEGIN LOCAL PROJECTION TAB #########
                                   # Local Health Projections ------------------------------------------------
                                   tabPanel(
                                       title = "Local Health Projections",
@@ -157,7 +157,7 @@ ui <- tagList(
                                   ),
                                   ####### END PROJECTION TAB #######
                                   
-                                  
+                                  ####### BEGIN MISSION RISK TAB #########
                                   # Mission Risk ------------------------------------------------------------
                                   tabPanel(
                                       title = "Mission Risk",

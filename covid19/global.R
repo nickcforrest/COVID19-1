@@ -249,7 +249,7 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
                     VectDailyDeaths[1:(length(VectDailyDeaths)-1)]
     
     #Clean up the dataset to prepare for plotting
-    ForecastDate<- seq(as.Date("2020-02-15"), length=(length(DailyNewDeaths)), by="1 day")
+    ForecastDate<- seq(as.Date("2020-02-17"), length=(length(DailyNewDeaths)), by="1 day")
     Chart1Data<-cbind.data.frame(ForecastDate,DailyNewCases,DailyNewHospitalizations,DailyNewDeaths)
     colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Fatalities")
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
@@ -291,7 +291,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
     CumHospitalizations<-ceiling(CumDailyCovid*0.1)
     
     #Clean up the dataset to get ready to plot it
-    ForecastDate<- seq(as.Date("2020-02-15"), length=(length(CumDailyDeaths)), by="1 day")
+    ForecastDate<- seq(as.Date("2020-02-17"), length=(length(CumDailyDeaths)), by="1 day")
     Chart2Data<-cbind.data.frame(ForecastDate,CumDailyCovid,CumHospitalizations,CumDailyDeaths)
     colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Fatalities")
     Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
