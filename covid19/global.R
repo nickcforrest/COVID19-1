@@ -248,7 +248,7 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
     colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Fatalities")
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
     #plot for local area daily cases
-    ggplot(Chart1DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
+    p1 <- ggplot(Chart1DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
@@ -264,6 +264,8 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
         ) +
         theme(axis.line = element_line(color = "black"))+
         theme(legend.position = "top")
+    
+    ggplotly(p1)
 }
 
 
@@ -285,7 +287,7 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
     colnames(Chart2Data)<-c("ForecastDate","Total Cases","Total Hospitalizations","Total Fatalities")
     Chart2DataSub <- melt(data.table(Chart2Data), id=c("ForecastDate"))
     #plot for local area cumulative cases
-    ggplot(Chart2DataSub,height = 250) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
+    p2 <- ggplot(Chart2DataSub,height = 250) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
         scale_colour_manual(values=c("Blue", "Orange", "Red"))+
         xlab('Date') +
         ylab('Number of People') +
@@ -301,6 +303,8 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
         ) +
         theme(axis.line = element_line(color = "black"))+
         theme(legend.position = "top")
+    
+    ggplotly(p2)
 }
 
 

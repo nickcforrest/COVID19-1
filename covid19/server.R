@@ -170,14 +170,14 @@ server <- function(input, output) {
     
     
     #Create first plot of local health population 
-    output$LocalHealthPlot1<-renderPlot({
+    output$LocalHealthPlot1<-renderPlotly({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
         CovidCasesPerDayChart(input$Base, input$Radius, MyCounties,MyHospitals)
     })
     
     #Create second plot of local health population 
-    output$LocalHealthPlot2<-renderPlot({
+    output$LocalHealthPlot2<-renderPlotly({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
         CovidCasesCumChart(input$Base, input$Radius, MyCounties,MyHospitals)
@@ -222,7 +222,7 @@ server <- function(input, output) {
     
     #Create IHME plot by State projected hospitalization 
     output$IHME_State_Hosp<-renderPlotly({
-        #Creating the stats and dataframes determined by teh base we choose to look at.
+        #Creating the stats and dataframes determined by the base we choose to look at.
         BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
         IncludedHospitals<-GetHospitals()
         IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))

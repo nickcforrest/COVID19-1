@@ -134,8 +134,8 @@ ui <- tagList(
                                           valueBoxOutput("HospUtlzChange", width = 4)
                                       ),
                                       fluidRow( 
-                                          box(title = "Daily Reports",plotOutput("LocalHealthPlot1",height = 300)),
-                                          box(title = "Total Reports",plotOutput("LocalHealthPlot2",height = 300))
+                                          box(title = "Daily Reports",plotlyOutput("LocalHealthPlot1",height = 300)),
+                                          box(title = "Total Reports",plotlyOutput("LocalHealthPlot2",height = 300))
                                       ),
                                       fluidRow(
                                           box(title = "Local Impact Map", plotOutput("LocalChoroPlot", height = 250),height = 300),
