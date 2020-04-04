@@ -228,42 +228,50 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
 
 #Begin function to create chart of new cases for COVID-19 is a specified region around a specified base
 CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospitals){
-    #Finds number of hospitals in radius
+    
+    #Find counties and hospitals in radius
     TotalBeds<-sum(IncludedHospitals$BEDS)
-    #Finds which counties in given radius. Also Give county statistics
-    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
-    n<-as.numeric(length(CovidCounties))
-    VectDailyCovid<-colSums(CovidCounties[,29:n])
-    DailyNewCases<-VectDailyCovid[2:length(VectDailyCovid)]-VectDailyCovid[1:(length(VectDailyCovid)-1)]
-    DailyNewCases
-    DailyNewHospitalizations<-ceiling(DailyNewCases*.26)
-    DailyNewHospitalizations
+    CovidCountiesCases<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+    CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
+    
+    #Recalculate datframe to have daily cases instead of cumulative
+    n<-as.numeric(length(CovidCountiesCases))
+    VectDailyCovid<-colSums(CovidCountiesCases[,29:n])
+    DailyNewCases<-VectDailyCovid[2:length(VectDailyCovid)] -
+                   VectDailyCovid[1:(length(VectDailyCovid)-1)]
+    
+    #Estimation for new hospitalizations based on CDC planning factors
+    DailyNewHospitalizations<-ceiling(DailyNewCases*.055)
+    
     #Find New Deaths
     CovidCountiesDeath<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
     VectDailyDeaths<-colSums(CovidCountiesDeath[29:ncol(CovidCountiesDeath)])
-    DailyNewDeaths<-VectDailyDeaths[2:length(VectDailyDeaths)]-VectDailyDeaths[1:(length(VectDailyDeaths)-1)]
+    DailyNewDeaths<-VectDailyDeaths[2:length(VectDailyDeaths)] -
+                    VectDailyDeaths[1:(length(VectDailyDeaths)-1)]
+    
     #Clean up the dataset to prepare for plotting
     ForecastDate<- seq(as.Date("2020-02-15"), length=(length(DailyNewDeaths)), by="1 day")
     Chart1Data<-cbind.data.frame(ForecastDate,DailyNewCases,DailyNewHospitalizations,DailyNewDeaths)
     colnames(Chart1Data)<-c("ForecastDate","New Cases","New Hospitalizations","New Fatalities")
     Chart1DataSub <- melt(data.table(Chart1Data), id=c("ForecastDate"))
+    
     #plot for local area daily cases
-    p1 <- ggplot(Chart1DataSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
-        scale_colour_manual(values=c("Blue", "Orange", "Red"))+
-        xlab('Date') +
-        ylab('Number of People') +
-        theme(text = element_text(size = 15)) +
-        theme(plot.title = element_text(hjust = 0.5))+
-        labs(color='')+
-        theme_bw()+
-        theme(
-            plot.background = element_blank(),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank()
-        ) +
-        theme(axis.line = element_line(color = "black"))+
-        theme(legend.position = "top")
+    p1 <- ggplot(Chart1DataSub) + 
+          geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
+          scale_colour_manual(values=c("Blue", "Orange", "Red")) +
+          xlab('Date') +
+          ylab('Number of People') +
+          theme_bw() + 
+          theme(text = element_text(size = 11),
+              plot.title = element_text(hjust = 0.5),
+              panel.background = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              axis.line = element_line(color = "black"),
+              legend.position = "top") +
+          labs(color='')
+          
     
     ggplotly(p1)
 }
