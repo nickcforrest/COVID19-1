@@ -62,7 +62,7 @@ ui <- tagList(
                                                        "Projection days:",
                                                        min = 14,
                                                        max = 120,
-                                                       value = 30),
+                                                       value = 60),
                                            sliderInput("social_dist",
                                                        "% Social distancing in your area:",
                                                        min = 0,
