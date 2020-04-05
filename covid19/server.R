@@ -388,10 +388,20 @@ server <- function(input, output) {
         DailyProjectionsSub <- melt(data.table(DailyData), id=c("ForecastDate"))
         TotalProjectionsSub <- melt(data.table(TotalData), id=c("ForecastDate"))
         
+        DailyData$`Expected Daily Cases` <- round(DailyData$`Expected Daily Cases`,0)
+        DailyData$`Minimum Daily Cases` <- round(DailyData$`Minimum Daily Cases`,0)
+        DailyData$`Maximum Daily Cases` <- round(DailyData$`Maximum Daily Cases`,0)
+        
         #Plot for local area cumulative cases
-        projections <- ggplot(DailyProjectionsSub) + 
-            geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 0.5) +
-            scale_colour_manual(values=c("Blue", "Orange", "Red"))+
+        projections <- ggplot(data = DailyData, 
+                              aes(x=ForecastDate,
+                                  y=DailyData$`Expected Daily Cases`,
+                                  ymin = DailyData$`Minimum Daily Cases`,
+                                  ymax = DailyData$`Maximum Daily Cases`)) + 
+            #geom_line(aes(x=ForecastDate, y=DailyData$`Expected Daily Cases`, ymin = DailyData$`Minimum Daily Cases` , ymax = DailyData$`Maximum Daily Cases`)) +
+            geom_line(linetype = "dashed", size = 0.75) +
+            geom_ribbon(alpha=0.3, fill = "cadetblue2") +
+            #scale_colour_manual(values=c("Blue", "Orange", "Red"))+
             xlab('Date') +
             ylab('Daily Hospitalizations') +
             ggtitle("SEIAR Projected Daily Cases") +
