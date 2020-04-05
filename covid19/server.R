@@ -283,6 +283,7 @@ server <- function(input, output) {
         SIRinputs<-data.frame(sum(ActiveCases$CurrentCases),sum(ActiveCases$Population), mean(ActiveCases$`Doubling Rate`))
         colnames(SIRinputs)<-c("cases","pop","doubling")
         
+        
         ####################################################################################
         #Mean Estimate
         
