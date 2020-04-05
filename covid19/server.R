@@ -381,7 +381,7 @@ server <- function(input, output) {
                                  icutime,ventilatortime,daysforecasted,Ro, .5)
 
         DailyData<-data.frame(DailyData, SEIARProj$sir$hos_add)
-        TotalData<-data.frame(TotalData, SEIARProj$sir$hos_cum )
+        TotalData<-data.frame(TotalData, SEIARProj$sir$hos_cum)
         colnames(DailyData)<-c("ForecastDate", "Expected Daily Cases","Minimum Daily Cases","Maximum Daily Cases")
         colnames(TotalData)<-c("ForecastDate", "Total Daily Cases", "Minimum Total Cases","Maximum Total Cases")
         
