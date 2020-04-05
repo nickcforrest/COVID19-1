@@ -210,7 +210,7 @@ server <- function(input, output) {
     
     
     #Creates the local choropleth charts that change based on which base and radius.
-    output$LocalChoroPlot<-renderPlot({
+    output$LocalChoroPlot<-renderPlotly({
         MyCounties<-GetCounties()
         PlotLocalChoro(MyCounties, input$Base)
     })

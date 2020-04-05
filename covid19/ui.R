@@ -51,7 +51,7 @@ ui <- tagList(
                                                    "Choose your local radius (miles):",
                                                    min = 10,
                                                    max = 100,
-                                                   value = 25),
+                                                   value = 50),
                                        br(),
                                        menuItem(
                                            "Extra Inputs",
@@ -138,7 +138,7 @@ ui <- tagList(
                                           box(title = "Total Reports",plotlyOutput("LocalHealthPlot2",height = 300))
                                       ),
                                       fluidRow(
-                                          box(title = "Local Impact Map", plotOutput("LocalChoroPlot", height = 250),height = 300),
+                                          box(title = "Local Impact Map", plotlyOutput("LocalChoroPlot", height = 250),height = 300),
                                           box(title = "Local County Statistics", solidHeader=T, align = "left", column(width = 12, DT::dataTableOutput("CountyDataTable1"), style = "height:240px;overflow-y: scroll"), height = 300)
                                       )
                                   ),
