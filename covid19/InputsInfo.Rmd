@@ -18,7 +18,8 @@ output: html_document
 
 * Selecting *County* portrays only the counties that reside within the local radius selected. The local area data being displayed throughout the dashboard only incorporates these counties. These counties are portrayed in the bottom right table of this tab. 
 
-* Selecting *State* portrays all counties from any state that resides within the local radius selected. **NOTE:** This option is available to better orient the user to the geographic location of the local area counties within their respective states. All counties portrayed when this option is selected are **NOT** necessarily included in the local area data. 
+* Selecting *State* portrays all counties from any state that resides within the local radius selected. \
+**NOTE:** This option is available to better orient the user to the geographic location of the local area counties within their respective states. All counties portrayed when this option is selected are **NOT** necessarily included in the local area data. 
 
 ### Local Health Projection Inputs
 *Consists of additional user input options that can be used to further customize dashboard assessments and projections.*
