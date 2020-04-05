@@ -184,6 +184,7 @@ server <- function(input, output) {
     })
     
     
+    
     # Output Choropleth Charts ----------------------------------------------------------------------------------------------------------------------------------------------------------
     
     
@@ -214,6 +215,7 @@ server <- function(input, output) {
         MyCounties<-GetCounties()
         PlotLocalChoro(MyCounties, input$Base, input$TypeLocal)
     })
+
     
     
     
@@ -419,6 +421,13 @@ server <- function(input, output) {
         ggplotly(projections)
         
         
+    })
+    
+#Overlay Projected Plots
+    output$OverlayPlots<-renderPlotly({
+        MyCounties<-GetCounties()
+        MyHospitals<-GetHospitals()
+        PlotOverlay(input$Base, MyCounties, MyHospitals, input$social_dist, input$proj_days)
     })
     
     
