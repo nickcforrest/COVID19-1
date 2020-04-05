@@ -153,7 +153,7 @@ ui <- tagList(
                                       ),
                                       fluidRow(
                                           box(plotlyOutput("IHME_State_Hosp",height = 400)),
-                                          box("insert CHIME projections here",height = 400))
+                                          box(plotlyOutput("SEIARProjection"),height = 400))
                                   ),
                                   ####### END PROJECTION TAB #######
                                   
