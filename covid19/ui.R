@@ -54,7 +54,17 @@ ui <- tagList(
                                                    value = 50),
                                        br(),
                                        menuItem(
-                                           "Extra Inputs",
+                                           "Current Local Health Inputs",
+                                           tabName = "dashboard",
+                                           icon = icon("map-marker-alt"),
+                                           div(id = "single", style="display: none;", numericInput("tckt", "Ticket Number : ", 12345,  width = 300)),
+                                           radioButtons("TypeLocal", "State or County Plot:",
+                                                        c("State"="State",
+                                                          "County"="County"),)
+                                       ),
+                                       br(),
+                                       menuItem(
+                                           "Local Health Projection Inputs",
                                            tabName = "dashboard",
                                            icon = icon("sliders-h"),
                                            div(id = "single", style="display: none;", numericInput("tckt", "Ticket Number : ", 12345,  width = 300)),

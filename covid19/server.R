@@ -212,7 +212,7 @@ server <- function(input, output) {
     #Creates the local choropleth charts that change based on which base and radius.
     output$LocalChoroPlot<-renderPlotly({
         MyCounties<-GetCounties()
-        PlotLocalChoro(MyCounties, input$Base)
+        PlotLocalChoro(MyCounties, input$Base, input$TypeLocal)
     })
     
     
@@ -262,7 +262,7 @@ server <- function(input, output) {
     })
     
 
-#Output the SEIAR projections with a max, min, and expected value
+#Output the SEIAR CHIME projections with a max, min, and expected value
     output$SEIARProjection<-renderPlotly({
         BaseState<-dplyr::filter(AFBaseLocations, Base == input$Base)
         IncludedCounties<-GetCounties()
