@@ -297,14 +297,14 @@ server <- function(input, output) {
         incubationtime<-2
         latenttime<-5
         recoverydays<-4
-        socialdistancing<-50
+        socialdistancing<-input$social_dist
         hospitalizationrate<-.3
         icurate<-.06
         ventilatorrate<-.03
         hospitaltime<-3.5
         icutime<-4
         ventilatortime<-7
-        daysforecasted<-60
+        daysforecasted<-input$proj_days
         
         #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
         #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns
@@ -333,14 +333,13 @@ server <- function(input, output) {
         incubationtime<-2
         latenttime<-5
         recoverydays<-4
-        socialdistancing<-50
         hospitalizationrate<-.2
         icurate<-.06
         ventilatorrate<-.03
         hospitaltime<-3.5
         icutime<-4
         ventilatortime<-7
-        daysforecasted<-60
+        
         
         #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
         #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns
@@ -366,14 +365,13 @@ server <- function(input, output) {
         incubationtime<-2
         latenttime<-5
         recoverydays<-4
-        socialdistancing<-50
         hospitalizationrate<-.4
         icurate<-.06
         ventilatorrate<-.03
         hospitaltime<-3.5
         icutime<-4
         ventilatortime<-7
-        daysforecasted<-60
+
         
         #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
         #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns

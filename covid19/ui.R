@@ -60,14 +60,14 @@ ui <- tagList(
                                            div(id = "single", style="display: none;", numericInput("tckt", "Ticket Number : ", 12345,  width = 300)),
                                            sliderInput("proj_days",
                                                        "Projection days:",
-                                                       min = 7,
-                                                       max = 90,
-                                                       value = 14),
+                                                       min = 14,
+                                                       max = 120,
+                                                       value = 30),
                                            sliderInput("social_dist",
                                                        "% Social distancing in your area:",
                                                        min = 0,
                                                        max = 100,
-                                                       value = 60)
+                                                       value = 50)
                                        ),
                                        br(),
                                        #actionButton("refresh", "Refresh", width = "90%"),
