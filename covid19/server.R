@@ -171,7 +171,7 @@ server <- function(input, output) {
         Peak
         
         valueBox(subtitle = "Predicted Peak Hospitalization Date",
-                 paste("CHIME: ", Peak),
+                 paste("CHIME: ", as.Date(Peak,"%m-%d" )),
                  icon = icon("hospital"),
                  color = "navy")
     })

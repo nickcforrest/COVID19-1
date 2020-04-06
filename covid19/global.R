@@ -278,6 +278,7 @@ CalculateCHIMEPeak<-function(IncludedCounties, ChosenBase, ChosenRadius, SocialD
     DailyData<-DailyData[-1,]
     Date<-which.max(DailyData$NewHospitalizations)
     DailyData[Date,1]
+    
 }
 
 
