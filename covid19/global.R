@@ -796,14 +796,27 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     
     projections <-  ggplot(OverlayData, aes(x=ForecastDate, y=`Expected Value`, color = ID, fill = ID)) +
         geom_line() + 
+        scale_colour_manual(values=c("blue", "tan"))+
+        scale_fill_manual(values = c("cadetblue", "tan4"))+
         geom_ribbon(aes(ymin = `Lower Bound`, ymax = `Upper Bound`), 
                     alpha = .2) +
-        theme(legend.position = "bottom") +
-        labs(title = "Projected Hospitalizations",
-             color = "ID", 
-             fill = "ID")
+        ggtitle("Projected Hospitalizations")+
+        theme_bw() + 
+        theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+              axis.title = element_text(face = "bold", size = 11, family = "sans"),
+              axis.text.x = element_text(angle = 60, hjust = 1), 
+              axis.line = element_line(color = "black"),
+              legend.position = "top",
+              plot.background = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank()) +
+        scale_x_date(date_breaks = "1 week")+
+        labs(color = "ID")
+    
     
     ggplotly(projections)
+    
 }
 
 
