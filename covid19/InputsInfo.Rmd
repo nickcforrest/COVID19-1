@@ -36,7 +36,7 @@ output: html_document
 2. **Percent Social Distancing Reduction**:  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.
 
 </br>
-```{r, echo = FALSE, warning = FALSE,collapse= TRUE}
+```{r echo = FALSE, warning = FALSE}
 library(data.table)
 library(knitr)
 
@@ -50,7 +50,7 @@ table1
 
 </br>
 
-```{r, echo = FALSE, warning = FALSE, collapse = TRUE}
+```{r echo = FALSE, warning = FALSE}
 measures <- c("SC", "NE", "SC + NE", "SD", "SC + SD", "NE + SD", "SC + NE + SD")
 percent <- c("4%", "8%", "12%", "15%", "19%", "23%", "27%")
 t <- cbind(measures, percent)
