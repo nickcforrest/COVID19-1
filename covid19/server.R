@@ -273,9 +273,14 @@ server <- function(input, output) {
         IHME_Region$allbed_lower = round(IHME_State$allbed_lower*PopRatio)
         IHME_Region$allbed_upper = round(IHME_State$allbed_upper*PopRatio)
         
+        
+        
         r1 <- ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
             geom_line(linetype = "dashed", size = 0.75) +
             geom_ribbon(alpha=0.3, fill = "tan3") + 
+            # geom_hline(yintercept = TotalBedsCounty,
+            #            linetype = "solid",
+            #            color = "red") +
             labs(title = paste("IHME Hospitalization Projections for Selected Region"),
                  x = "Date", y = "Projected Daily Hospitalizations") +
             theme_bw() +
