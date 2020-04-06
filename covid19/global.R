@@ -222,6 +222,64 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
     paste(Upper," %", sep = "") 
 }
 
+CalculateCHIMEPeak<-function(IncludedCounties, ChosenBase, ChosenRadius, SocialDistance, ProjectedDays){
+    BaseState<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
+    #Get data for counties with covid cases. We want number of cases, the rate of the cases and maybe other data.
+    #We include State, county, population in those counties, cases, fatalities, doubling rate
+    CovidCounties<-subset(CovidConfirmedCases, CountyFIPS %in% IncludedCounties$FIPS)
+    DeathCounties<-subset(CovidDeaths, CountyFIPS %in% IncludedCounties$FIPS)
+    CaseRate <- subset(CovidConfirmedCasesRate, CountyFIPS %in% IncludedCounties$FIPS)
+    CountyDataTable<-cbind(IncludedCounties,rev(CovidCounties)[,1],rev(DeathCounties)[,1],rev(CaseRate)[,1])
+    CountyDataTable<-data.frame(CountyDataTable$State,CountyDataTable$County,CountyDataTable$Population, rev(CountyDataTable)[,3], rev(CountyDataTable)[,2],rev(CountyDataTable)[,1])
+    colnames(CountyDataTable)<-c("State","County","Population","Total Confirmed Cases","Total Fatalities", "Case Doubling Rate (days)" )
+    
+    #Cleaning it up to input into the SEIAR model, we include countyFIPS, CountyName, State, State FIPS, number of cases, population, and doubling rate
+    #We take the data and create a dataframe called SIR inputs. It checks out by total cases, total population, and average doubling rate
+    ActiveCases<-rev(CovidCounties)[1:7]
+    ActiveCases<-data.frame(CovidCounties[,1:4],ActiveCases[,1], IncludedCounties$Population, CountyDataTable$`Case Doubling Rate (days)`)
+    colnames(ActiveCases)<-c("CountyFIPS","CountyName","State","StateFIPS","CurrentCases", "Population", "Doubling Rate")
+    SIRinputs<-data.frame(sum(ActiveCases$CurrentCases),sum(ActiveCases$Population), mean(ActiveCases$`Doubling Rate`))
+    colnames(SIRinputs)<-c("cases","pop","doubling")
+    
+    
+    ####################################################################################
+    #Mean Estimate
+    
+    #Next we use the calculated values, along with estimated values from the CDC. 
+    #The only input we want from the user is the social distancing rate. For this example, we just use 0.5
+    cases<-SIRinputs$cases
+    pop<-SIRinputs$pop
+    doubling<-8
+    
+    #Established Variables at the start for every county or populations
+    Ro<-2.5
+    incubationtime<-5
+    latenttime<-2
+    recoverydays<-14
+    socialdistancing<-SocialDistance
+    hospitalizationrate<-5
+    icurate<-6
+    ventilatorrate<-3
+    hospitaltime<-3.5
+    icutime<-4
+    ventilatortime<-7
+    daysforecasted<-ProjectedDays
+    
+    
+    #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
+    #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns
+    SEIARProj<-SEIAR_Model_Run(cases, pop, incubationtime, latenttime,doubling,recoverydays,
+                               socialdistancing,hospitalizationrate, icurate,ventilatorrate,hospitaltime,icutime,
+                               ventilatortime,daysforecasted,Ro, .5)
+    
+    MyDates<-seq(Sys.Date()-(length(CovidCounties)-65), length=daysforecasted, by="1 day")
+    DailyData<-data.frame(MyDates, SEIARProj$sir$hos_add)
+    colnames(DailyData)<-c("Date","NewHospitalizations")
+    DailyData<-DailyData[-1,]
+    Date<-which.max(DailyData$NewHospitalizations)
+    DailyData[Date,1]
+}
+
 
 
 # Create Charts for plotting lines showing trends among the virus  ------------------------------------------------------------------------------------------------------------------
@@ -818,31 +876,6 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     ggplotly(projections)
     
 }
-
-
-# projections <- ggplot(data = DailyData, 
-#                       aes(x=ForecastDate,
-#                           y=DailyData$`Expected Daily Cases`,
-#                           ymin = DailyData$`Minimum Daily Cases`,
-#                           ymax = DailyData$`Maximum Daily Cases`)) + 
-#     #geom_line(aes(x=ForecastDate, y=DailyData$`Expected Daily Cases`, ymin = DailyData$`Minimum Daily Cases` , ymax = DailyData$`Maximum Daily Cases`)) +
-#     geom_line(linetype = "dashed", size = 0.75) +
-#     geom_ribbon(alpha=0.3, fill = "cadetblue2") +
-#     #scale_colour_manual(values=c("Blue", "Orange", "Red"))+
-#     xlab('Date') +
-#     ylab('Daily Hospitalizations') +
-#     ggtitle("Army SEIAR Projected Daily Cases") +
-#     theme_bw() + 
-#     theme(text = element_text(size = 11),
-#           plot.title = element_text(hjust = 0.5),
-#           panel.background = element_blank(),
-#           panel.grid.major = element_blank(),
-#           panel.grid.minor = element_blank(),
-#           panel.border = element_blank(),
-#           axis.line = element_line(color = "black"),
-#           legend.position = "top") +
-#     labs(color='')
-
 
 
 # Create data tables for analysis ---------------------------------------------------------------------------------------------------------------------------------------------------

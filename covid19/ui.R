@@ -159,7 +159,8 @@ ui <- tagList(
                                   tabPanel(
                                       title = "Local Health Projections",
                                       fluidRow(
-                                          valueBoxOutput("TotalPopulation")
+                                          valueBoxOutput("TotalPopulation"),
+                                          valueBoxOutput("CHIMEPeakDate")
                                       ),
                                       fluidRow(
                                           box(plotlyOutput("IHME_State_Hosp",height = 400)),

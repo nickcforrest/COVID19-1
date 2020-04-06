@@ -165,6 +165,16 @@ server <- function(input, output) {
                  color = "navy")
     })
     
+    output$CHIMEPeakDate<-renderValueBox({
+        MyCounties<-GetCounties()
+        Peak<-CalculateCHIMEPeak(MyCounties, input$Base, input$Radius, input$social_dist, input$proj_days)
+        Peak
+        
+        valueBox(subtitle = "Predicted Peak Hospitalization Date",
+                 paste("CHIME: ", Peak),
+                 icon = icon("hospital"),
+                 color = "navy")
+    })
     
     # Output line plots for the dashboard ----------------------------------------------------------------------------------------------------------------------------------------------------
     
@@ -180,7 +190,7 @@ server <- function(input, output) {
     output$LocalHealthPlot2<-renderPlotly({
         MyCounties<-GetCounties()
         MyHospitals<-GetHospitals()
-        CovidCasesCumChart(input$Base, input$Radius, MyCounties,MyHospitals)
+        CovidCasesCumChart(input$Base, input$Radius, MyCounties, MyHospitals)
     })
     
     
