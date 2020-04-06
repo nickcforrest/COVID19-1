@@ -24,6 +24,6 @@ output: html_document
 ### Local Health Projection Inputs
 *Consists of additional user input options that can be used to further customize dashboard assessments and projections.*
 
-1. **# Days to Project**: How many days into the future the dashboard displays predictive model projections.
+1. **Projection Days**: How many days into the future the dashboard displays predictive model projections.
 
 2. **Percent Social Distancing Reduction**:  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.
