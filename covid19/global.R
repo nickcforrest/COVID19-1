@@ -262,14 +262,16 @@ CovidCasesPerDayChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHo
           xlab('Date') +
           ylab('Number of People') +
           theme_bw() + 
-          theme(text = element_text(size = 11),
-              plot.title = element_text(hjust = 0.5),
-              panel.background = element_blank(),
+          theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+              axis.title = element_text(face = "bold", size = 11, family = "sans"),
+              axis.text.x = element_text(angle = 60, hjust = 1), 
+              axis.line = element_line(color = "black"),
+              legend.position = "top",
+              plot.background = element_blank(),
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              axis.line = element_line(color = "black"),
-              legend.position = "top") +
+              panel.border = element_blank()) +
+          scale_x_date(date_breaks = "1 week") +
           labs(color='')
           
     ggplotly(p1)
@@ -304,14 +306,16 @@ CovidCasesCumChart<-function(ChosenBase, Radius, IncludedCounties, IncludedHospi
         xlab('Date') +
         ylab('Number of People') +
         theme_bw() + 
-        theme(text = element_text(size = 11),
-              plot.title = element_text(hjust = 0.5),
-              panel.background = element_blank(),
+        theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+              axis.title = element_text(face = "bold", size = 11, family = "sans"),
+              axis.text.x = element_text(angle = 60, hjust = 1), 
+              axis.line = element_line(color = "black"),
+              legend.position = "top",
+              plot.background = element_blank(),
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              axis.line = element_line(color = "black"),
-              legend.position = "top") +
+              panel.border = element_blank()) +
+        scale_x_date(date_breaks = "1 week")
         labs(color='')
     
     ggplotly(p2)
@@ -725,14 +729,16 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
         ylab('Daily Hospitalizations') +
         ggtitle("Projected Hospitalizations Over Time") +
         theme_bw() + 
-        theme(text = element_text(size = 11),
-              plot.title = element_text(hjust = 0.5),
-              panel.background = element_blank(),
+        theme(plot.title = element_text(face = "bold", size = 15, family = "sans"),
+              axis.title = element_text(face = "bold", size = 11, family = "sans"),
+              axis.text.x = element_text(angle = 60, hjust = 1), 
+              axis.line = element_line(color = "black"),
+              legend.position = "top",
+              plot.background = element_blank(),
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              axis.line = element_line(color = "black"),
-              legend.position = "top") +
+              panel.border = element_blank()) +
+        scale_x_date(date_breaks = "1 week")
         labs(color='')
     
     ggplotly(total)
