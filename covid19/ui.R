@@ -59,8 +59,8 @@ ui <- tagList(
                                            icon = icon("map-marker-alt"),
                                            div(id = "single", style="display: none;", numericInput("tckt", "Ticket Number : ", 12345,  width = 300)),
                                            radioButtons("TypeLocal", "State or County Plot:",
-                                                        c("State"="State",
-                                                          "County"="County"),)
+                                                        c("County"="County",
+                                                            "State"="State"),)
                                        ),
                                        br(),
                                        menuItem(
