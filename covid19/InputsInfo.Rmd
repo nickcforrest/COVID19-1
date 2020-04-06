@@ -2,6 +2,17 @@
 output: html_document
 ---
 
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+```
+
+<style type = "text/css">
+.table {
+  width: 84%;
+  margin-left: 7%;
+  margin-right: 17%;
+}
+</style>
 
 *Users have the ability to adjust various input factors in the left sidebar to customize the dashboard experience.*
 
@@ -27,3 +38,27 @@ output: html_document
 1. **Projection Days**: How many days into the future the dashboard displays predictive model projections.
 
 2. **Percent Social Distancing Reduction**:  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.
+
+</br>
+```{r, echo = FALSE, warning = FALSE}
+library(data.table)
+library(knitr)
+
+acros <- c("Closing Schools (SC)", "Closing Non-essential Businesses (NE)", "Social Distancing (SD)")
+defs <- c("All K-12 schools will be closed for ten business days", "All nonessential businesses are ordered closed. Supermarkets, pharmacies, and gas stations will remain open. Businesses that offer carry-out, delivery, and drive-through food and beverage service may continue.", "Suggestions to restrict to 10 people or less, and follow CDC instructions for voluntarily self quarantine.")
+def_table <- cbind(acros, defs)
+colnames(def_table) <- c("Acronyms", "Definitions")
+table1 <- kable(def_table, align = c('l','l'))
+table1
+```
+
+</br>
+
+```{r, echo = FALSE, warning = FALSE}
+measures <- c("SC", "NE", "SC + NE", "SD", "SC + SD", "NE + SD", "SC + NE + SD")
+percent <- c("4%", "8%", "12%", "15%", "19%", "23%", "27%")
+t <- cbind(measures, percent)
+colnames(t) <- c("Measures Taken", "Total Percent Reduction of Social Contact")
+table2 <- kable(t, align = c('l','l'))
+table2
+```
