@@ -50,12 +50,10 @@ kable(def_table, align = c('l','l'))
 </br>
 
 
-
 ```{r, echo = FALSE, warning = FALSE}
 measures <- c("SC", "NE", "SC + NE", "SD", "SC + SD", "NE + SD", "SC + NE + SD")
 percent <- c("4%", "8%", "12%", "15%", "19%", "23%", "27%")
 t <- cbind(measures, percent)
 colnames(t) <- c("Measures Taken", "Total Percent Reduction of Social Contact")
-
 kable(t, align = c('l','l'))
 ```
