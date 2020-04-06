@@ -271,7 +271,29 @@ CalculateCHIMEPeak<-function(IncludedCounties, ChosenBase, ChosenRadius, SocialD
     DailyData<-DailyData[-1,]
     Date<-which.max(DailyData$NewHospitalizations)
     DailyData[Date,1]
+}
+
+CalculateIHMEPeak<-function(ChosenBase, IncludedHospitals){
+    #Creating the stats and dataframes determined by the base we choose to look at.
+    BaseState<-dplyr::filter(AFBaseLocations, Base == ChosenBase)
+    IHME_State <- dplyr::filter(IHME_Model, State == toString(BaseState$State[1]))
+    TotalBedsCounty <- sum(IncludedHospitals$BEDS)
     
+    # Get total hospital bed number across state
+    IncludedHospitalsST <- dplyr::filter(HospitalInfo, STATE == toString(BaseState$State[1]))
+    TotalBedsState <- sum(IncludedHospitalsST$BEDS)
+    
+    # Calculate bed ratio
+    BedProp <- TotalBedsCounty/TotalBedsState
+    
+    # Apply ratio's to IHME data
+    IHME_Region <- IHME_State
+    IHME_Region$allbed_mean = round(IHME_State$allbed_mean*BedProp)
+    IHME_Data<-data.frame(IHME_Region$date,IHME_Region$allbed_mean)
+    
+    PeakDate<-which.max(IHME_Data$IHME_Region.allbed_mean)
+    PeakDate<-IHME_Data$IHME_Region.date[PeakDate]
+    PeakDate
 }
 
 
@@ -848,8 +870,8 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     
     projections <-  ggplot(OverlayData, aes(x=ForecastDate, y=`Expected Value`, color = ID, fill = ID)) +
         geom_line() + 
-        scale_colour_manual(values=c("blue", "tan"))+
-        scale_fill_manual(values = c("cadetblue", "tan4"))+
+        scale_colour_manual(values=c("tan", "blue"))+
+        scale_fill_manual(values = c("tan4", "cadetblue"))+
         geom_ribbon(aes(ymin = `Lower Bound`, ymax = `Upper Bound`), 
                     alpha = .2) +
         ggtitle("Projected Hospitalizations")+
