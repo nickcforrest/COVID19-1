@@ -423,7 +423,7 @@ server <- function(input, output) {
                   panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
                   panel.border = element_blank()) +
-            scale_x_date(date_breaks = "1 week")
+            scale_x_date(date_breaks = "2 week")
             labs(color='')
         
         ggplotly(projections)
