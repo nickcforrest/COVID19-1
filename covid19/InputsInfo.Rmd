@@ -13,7 +13,17 @@ output: html_document
 
 2. **Local Radius**: How large of an area around the installation is considered. Ranges from 10 - 100 miles with a default of 25 miles. Data from all counties within that range will be considered in the calculations, idependent of the specific state that the installation resides. 
 
-### Extra Inputs
-*Consists of additional user input options that can be used to further customize dashboard assessments.*
+### Current Local Health Inputs
+1. **State or County Plot**: This allows the user to alter how the local area map on the Current Local Health Tab is protrayed. 
 
-1. **Percent Social Distancing Reduction:**  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.
+* Selecting *County* portrays only the counties that reside within the local radius selected. The local area data being displayed throughout the dashboard only incorporates these counties. These counties are portrayed in the bottom right table of this tab. 
+
+* Selecting *State* portrays all counties from any state that resides within the local radius selected. \
+**NOTE:** This option is available to better orient the user to the geographic location of the local area counties within their respective states. All counties portrayed when this option is selected are **NOT** necessarily included in the local area data. 
+
+### Local Health Projection Inputs
+*Consists of additional user input options that can be used to further customize dashboard assessments and projections.*
+
+1. **# Days to Project**: How many days into the future the dashboard displays predictive model projections.
+
+2. **Percent Social Distancing Reduction**:  How much reduction in transmission is realized from social distancing measures. Studies show the maximum reduction without eliminating essential interactions is 30%. Ranges from 0 - 40% with a default of 10%. See source page for more details.

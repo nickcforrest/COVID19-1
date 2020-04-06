@@ -4,7 +4,7 @@ output: html_document
 
 
 ### Calculation Information
-*These reference the essential calculations used to conduct analysis and the assumptions made of the data*  
+*These reference the essential calculations used to conduct analysis and the assumptions made regarding the data*  
 
 **Dynamic Elements**: 
 
@@ -18,12 +18,11 @@ output: html_document
 
 2. **Hospitalization Utilzation**: Hospitalization rates are a function of the total number of hospital beds in a county and the number of locally confirmed cases. The percentage of hospitalized patients totals the number of confirmed cases in the past 7 days (average length of hospital stay) and multiplies that number of cases by a percentage (15%) provided by the Center for Disease Control estimating the percentage of patients requiring a hospital stay. This number is then added to the national average hospital capacity. 
 
-
 3. **Percentage Change in Hospitalization Utilization**: The change in hospitalization rates is calculated by the the difference in new cases and the confirmed cases 8 days prior. With that difference, the change is then divided by the total number of hospital beds in the local area to calculate a percentage change in the local area.
 
-**Model Calculations**: 
+### Predictive Models: 
 
-**IHME**: 
+**IHME**: Developed by the University of Washington's Institute for Health Metrics and Evaluation, this model uses data from state and national governments, hospital groups, and the World Health Organization to predict hospitalizations and ICU rates for planning purposes. 
 
-**CHIME**: 
+**SEIAR**: This predictive model was pulled from the Army's ACME Tool developed through collaborative efforts from Army Futures Command and the Army Public Health Center(APHC) COVID-19 Modeling Team. This model was inspired by Penn State University's CHIME model. Detailed information about the CHIME model can be found at https://code-for-philly.gitbook.io/chime/. 
 
