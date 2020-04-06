@@ -688,14 +688,14 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     incubationtime<-5
     latenttime<-2
     recoverydays<-14
-    socialdistancing<-15
+    socialdistancing<-SocialDistance
     hospitalizationrate<-5
     icurate<-6
     ventilatorrate<-3
     hospitaltime<-3.5
     icutime<-4
     ventilatortime<-7
-    daysforecasted<-180
+    daysforecasted<-DaysProjected
     
     
     #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
@@ -725,14 +725,14 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     incubationtime<-5
     latenttime<-2
     recoverydays<-14
-    socialdistancing<-15
+    socialdistancing<-SocialDistance
     hospitalizationrate<-5
     icurate<-6
     ventilatorrate<-3
     hospitaltime<-3.5
     icutime<-4
     ventilatortime<-7
-    daysforecasted<-180
+    daysforecasted<-DaysProjected
     
     
 
@@ -761,14 +761,14 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     incubationtime<-5
     latenttime<-2
     recoverydays<-14
-    socialdistancing<-15
+    socialdistancing<-SocialDistance
     hospitalizationrate<-5.5
     icurate<-6
     ventilatorrate<-3
     hospitaltime<-3.5
     icutime<-4
     ventilatortime<-7
-    daysforecasted<-180
+    daysforecasted<-DaysProjected
     
     #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
     #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns
