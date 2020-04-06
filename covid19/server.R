@@ -291,23 +291,24 @@ server <- function(input, output) {
         
         #Next we use the calculated values, along with estimated values from the CDC. 
         #The only input we want from the user is the social distancing rate. For this example, we just use 0.5
-        cases<-1
+        cases<-SIRinputs$cases
         pop<-SIRinputs$pop
-        doubling<-SIRinputs$doubling
+        doubling<-8
         
         #Established Variables at the start for every county or populations
         Ro<-2.5
-        incubationtime<-2
-        latenttime<-5
-        recoverydays<-4
+        incubationtime<-5
+        latenttime<-2
+        recoverydays<-14
         socialdistancing<-input$social_dist
-        hospitalizationrate<-.3
-        icurate<-.06
-        ventilatorrate<-.03
+        hospitalizationrate<-5
+        icurate<-6
+        ventilatorrate<-3
         hospitaltime<-3.5
         icutime<-4
         ventilatortime<-7
         daysforecasted<-input$proj_days
+
         
         #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
         #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns
@@ -327,21 +328,23 @@ server <- function(input, output) {
         
         #Next we use the calculated values, along with estimated values from the CDC. 
         #The only input we want from the user is the social distancing rate. For this example, we just use 0.5
-        cases<-1
+        cases<-SIRinputs$cases
         pop<-SIRinputs$pop
-        doubling<-SIRinputs$doubling
+        doubling<-10
         
         #Established Variables at the start for every county or populations
-        Ro<-2
-        incubationtime<-2
-        latenttime<-5
-        recoverydays<-4
-        hospitalizationrate<-.2
-        icurate<-.06
-        ventilatorrate<-.03
+        Ro<-2.5
+        incubationtime<-5
+        latenttime<-2
+        recoverydays<-14
+        socialdistancing<-input$social_dist
+        hospitalizationrate<-5
+        icurate<-6
+        ventilatorrate<-3
         hospitaltime<-3.5
         icutime<-4
         ventilatortime<-7
+        daysforecasted<-input$proj_days
         
         
         #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
@@ -358,23 +361,25 @@ server <- function(input, output) {
         ####################################################################################
         #Upper Estimate
         #Next we use the calculated values, along with estimated values from the CDC. 
+        
         #The only input we want from the user is the social distancing rate. For this example, we just use 0.5
-        cases<-1
+        cases<-SIRinputs$cases
         pop<-SIRinputs$pop
-        doubling<-SIRinputs$doubling
+        doubling<-7
         
         #Established Variables at the start for every county or populations
-        Ro<-3
-        incubationtime<-2
-        latenttime<-5
-        recoverydays<-4
-        hospitalizationrate<-.4
-        icurate<-.06
-        ventilatorrate<-.03
+        Ro<-2.5
+        incubationtime<-5
+        latenttime<-2
+        recoverydays<-14
+        socialdistancing<-input$social_dist
+        hospitalizationrate<-5.5
+        icurate<-6
+        ventilatorrate<-3
         hospitaltime<-3.5
         icutime<-4
         ventilatortime<-7
-
+        daysforecasted<-input$proj_days
         
         #Now we throw the values above into the SEIAR model, and we create dates for the number of days we decided to forecast as well (place holder for now).
         #With the outputs, we grab the daily hospitalized people and the cumulative hospitalizations. Then we name the columns
@@ -393,6 +398,7 @@ server <- function(input, output) {
         DailyData$`Expected Daily Cases` <- round(DailyData$`Expected Daily Cases`,0)
         DailyData$`Minimum Daily Cases` <- round(DailyData$`Minimum Daily Cases`,0)
         DailyData$`Maximum Daily Cases` <- round(DailyData$`Maximum Daily Cases`,0)
+        DailyData<-DailyData[-1,]
         
         #Plot for local area cumulative cases
         projections <- ggplot(data = DailyData, 
@@ -406,7 +412,7 @@ server <- function(input, output) {
             #scale_colour_manual(values=c("Blue", "Orange", "Red"))+
             xlab('Date') +
             ylab('Daily Hospitalizations') +
-            ggtitle("SEIAR Projected Daily Cases") +
+            ggtitle("Army SEIAR Projected Daily Cases") +
             theme_bw() + 
             theme(text = element_text(size = 11),
                   plot.title = element_text(hjust = 0.5),

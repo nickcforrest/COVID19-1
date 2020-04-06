@@ -674,19 +674,19 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     
     #Next we use the calculated values, along with estimated values from the CDC. 
     #The only input we want from the user is the social distancing rate. For this example, we just use 0.5
-    cases<-1
+    cases<-SIRinputs$cases
     pop<-SIRinputs$pop
-    doubling<-SIRinputs$doubling
+    doubling<-8
     
     #Established Variables at the start for every county or populations
     Ro<-2.5
-    incubationtime<-2
-    latenttime<-5
-    recoverydays<-4
+    incubationtime<-5
+    latenttime<-2
+    recoverydays<-14
     socialdistancing<-SocialDistance
-    hospitalizationrate<-.3
-    icurate<-.06
-    ventilatorrate<-.03
+    hospitalizationrate<-5
+    icurate<-6
+    ventilatorrate<-3
     hospitaltime<-3.5
     icutime<-4
     ventilatortime<-7
@@ -714,12 +714,13 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
     AllProjections<-merge(DailyData, IHME_Data, by.x = "ForecastDate", by.y = "ForecastDate")
     AllProjections<-data.frame(AllProjections$ForecastDate, AllProjections$`SEIAR Expected Value`, AllProjections$`IHME Expected Value`)
     colnames(AllProjections)<-c("ForecastDate", "CHIME Projections", "IHME Projections")
+    AllProjections<-AllProjections[-1,]
     
     PlotSub<-melt(data.table(AllProjections), id = "ForecastDate")
     
     total<-ggplot(PlotSub) + geom_line(aes(x=ForecastDate, y=value, colour = variable), size = 1) +
         scale_colour_manual(values=c("blue", "red"))+
-        #geom_point(data = PilotData, aes(x = EOP_Date, y = Separation_Count), color = "blue", size = 1)+
+#        geom_ribbon(aes(ymin=v-0.1*v, ymax=v+0.1*v, fill=t), alpha=0.2)
         xlab('Date') +
         ylab('Daily Hospitalizations') +
         ggtitle("Projected Hospitalizations Over Time") +
@@ -738,7 +739,28 @@ PlotOverlay<-function(ChosenBase, IncludedCounties, IncludedHospitals, SocialDis
 }
 
 
-
+# projections <- ggplot(data = DailyData, 
+#                       aes(x=ForecastDate,
+#                           y=DailyData$`Expected Daily Cases`,
+#                           ymin = DailyData$`Minimum Daily Cases`,
+#                           ymax = DailyData$`Maximum Daily Cases`)) + 
+#     #geom_line(aes(x=ForecastDate, y=DailyData$`Expected Daily Cases`, ymin = DailyData$`Minimum Daily Cases` , ymax = DailyData$`Maximum Daily Cases`)) +
+#     geom_line(linetype = "dashed", size = 0.75) +
+#     geom_ribbon(alpha=0.3, fill = "cadetblue2") +
+#     #scale_colour_manual(values=c("Blue", "Orange", "Red"))+
+#     xlab('Date') +
+#     ylab('Daily Hospitalizations') +
+#     ggtitle("Army SEIAR Projected Daily Cases") +
+#     theme_bw() + 
+#     theme(text = element_text(size = 11),
+#           plot.title = element_text(hjust = 0.5),
+#           panel.background = element_blank(),
+#           panel.grid.major = element_blank(),
+#           panel.grid.minor = element_blank(),
+#           panel.border = element_blank(),
+#           axis.line = element_line(color = "black"),
+#           legend.position = "top") +
+#     labs(color='')
 
 
 

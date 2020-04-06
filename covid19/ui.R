@@ -71,13 +71,13 @@ ui <- tagList(
                                            sliderInput("proj_days",
                                                        "Projection days:",
                                                        min = 14,
-                                                       max = 120,
-                                                       value = 60),
+                                                       max = 365,
+                                                       value = 120),
                                            sliderInput("social_dist",
                                                        "% Social distancing in your area:",
                                                        min = 0,
-                                                       max = 100,
-                                                       value = 50)
+                                                       max = 40,
+                                                       value = 15)
                                        ),
                                        br(),
                                        #actionButton("refresh", "Refresh", width = "90%"),
