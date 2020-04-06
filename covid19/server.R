@@ -54,7 +54,8 @@ server <- function(input, output) {
         MyCounties<-GetCounties()
         valueBox(subtitle = "Total Regional Population",
                  comma(CalculateCounties(input$Base,input$Radius, MyCounties)),
-                 icon = icon("list-ol")
+                 icon = icon("list-ol"),
+                 color = "light-blue"
         )
         
     })
@@ -168,10 +169,19 @@ server <- function(input, output) {
     output$CHIMEPeakDate<-renderValueBox({
         MyCounties<-GetCounties()
         Peak<-CalculateCHIMEPeak(MyCounties, input$Base, input$Radius, input$social_dist, input$proj_days)
-        Peak
-        
-        valueBox(subtitle = "Predicted Peak Hospitalization Date",
-                 paste("CHIME: ", as.Date(Peak,"%m-%d" )),
+        Peak<-format(Peak,"%B %d")
+        valueBox(subtitle = "CHIME Predicted Peak Hospitalization Date",
+                 paste(Peak),
+                 icon = icon("hospital"),
+                 color = "blue")
+    })
+    
+    output$IHMEPeakDate<-renderValueBox({
+        MyHospitals<-GetHospitals()
+        Peak<-CalculateIHMEPeak(input$Base, MyHospitals)
+        Peak<-format(Peak,"%B %d")
+        valueBox(subtitle = "IHME Predicted Peak Hospitalization Date",
+                 paste(Peak),
                  icon = icon("hospital"),
                  color = "navy")
     })
