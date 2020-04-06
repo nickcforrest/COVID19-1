@@ -24,5 +24,5 @@ output: html_document
 
 **IHME**: Developed by the University of Washington's Institute for Health Metrics and Evaluation, this model uses data from state and national governments, hospital groups, and the World Health Organization to predict hospitalizations and ICU rates for planning purposes. 
 
-**SEIAR**: This predictive model was pulled from the Army's ACME Tool developed through collaborative efforts from Army Futures Command and the Army Public Health Center(APHC) COVID-19 Modeling Team. This model was inspired by Penn State's CHIME model. Detailed information about the CHIME model can be found at https://code-for-philly.gitbook.io/chime/. 
+**SEIAR**: This predictive model was pulled from the Army's ACME Tool developed through collaborative efforts from Army Futures Command and the Army Public Health Center(APHC) COVID-19 Modeling Team. This model was inspired by Penn State University's CHIME model. Detailed information about the CHIME model can be found at https://code-for-philly.gitbook.io/chime/. 
 
