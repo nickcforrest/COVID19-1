@@ -128,7 +128,7 @@ server <- function(input, output) {
         TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
         NotHospital<-sum(rev(CovidCounties)[,7])
         StillHospital<-ceiling((TotalHospital-NotHospital))
-        Upper<- round(((StillHospital+changeC*.1)/TotalBeds+.6)*100,1)
+        Upper<- round(((StillHospital+changeC*.1)/TotalBeds+.5)*100,1)
         #Lower<- round(((StillHospital+changeC*.207)/TotalBeds+.55)*100,1)
         paste(Upper," %", sep = "") 
         
@@ -145,13 +145,13 @@ server <- function(input, output) {
         TotalHospital<-sum(rev(CovidCounties)[,1])
         NotHospital<-sum(rev(CovidCounties)[,6])
         StillHospital<-ceiling((TotalHospital-NotHospital))
-        Upper<-(signif(((StillHospital+changeC*.1)/TotalBeds+.6)*100,3))
+        Upper<-(signif(((StillHospital+changeC*.1)/TotalBeds+.5)*100,3))
         #Lower<-(signif(((StillHospital+changeC*.207)/TotalBeds+.6)*100,3))
         # Yesterday
         TotalHospitaly<-sum(CovidCounties[,ncol(CovidCounties)-1])
         NotHospitaly<-sum(CovidCounties[,n-1])
         StillHospitaly<-ceiling((TotalHospitaly-NotHospitaly))
-        Uppery<-(signif(((StillHospitaly+changey*.1)/TotalBeds+.6)*100,3))
+        Uppery<-(signif(((StillHospitaly+changey*.1)/TotalBeds+.5)*100,3))
         #Lowery<-(signif(((StillHospitaly+changey*.207)/TotalBeds+.6)*100,3))
         chng <- round((Upper-Uppery)/2, 1)
         
@@ -278,9 +278,9 @@ server <- function(input, output) {
         r1 <- ggplot(data=IHME_Region, aes(x=date, y=allbed_mean, ymin=allbed_lower, ymax=allbed_upper)) +
             geom_line(linetype = "dashed", size = 0.75) +
             geom_ribbon(alpha=0.3, fill = "tan3") + 
-            # geom_hline(yintercept = TotalBedsCounty,
-            #            linetype = "solid",
-            #            color = "red") +
+            geom_hline(yintercept = TotalBedsCounty * 0.5,
+                       linetype = "solid",
+                       color = "red") +
             labs(title = paste("IHME Hospitalization Projections for Selected Region"),
                  x = "Date", y = "Projected Daily Hospitalizations") +
             theme_bw() +

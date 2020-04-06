@@ -210,7 +210,7 @@ HospitalIncreases<-function(ChosenBase, Radius, IncludedCounties, IncludedHospit
     TotalHospital<-sum(CovidCounties[,ncol(CovidCounties)])
     NotHospital<-sum(rev(CovidCounties)[,7])
     StillHospital<-ceiling((TotalHospital-NotHospital))
-    Upper<- round(((StillHospital+changeC*.1)/TotalBeds+.6)*100,1)
+    Upper<- round(((StillHospital+changeC*.1)/TotalBeds+.5)*100,1)
     #Lower<- round(((StillHospital+changeC*.207)/TotalBeds+.55)*100,1)
     paste(Upper," %", sep = "") 
 }
