@@ -79,16 +79,9 @@ colnames(CovidConfirmedCases)[1]<-"CountyFIPS"
 #Read in IHME data for projecting data in the future
 temp <- tempfile()
 download.file("https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip", temp, mode="wb")
-# filename = paste(format(as.Date(Sys.Date()-3), "%Y"), "_",
-#                  format(as.Date(Sys.Date()-3), "%m"), "_",
-#                  format(as.Date(Sys.Date()-3), "%d"), ".2",
-#                  "/Hospitalization_all_locs.csv",
-#                  sep = "")
-
 zipdf <- unzip(temp, list = TRUE)
 csv_file <- zipdf$Name[2]
 IHME_Model <- read.csv(csv_file)
-#IHME_Model <- read.csv(filename)
 unlink(temp)
 IHME_Model$date <- as.Date(IHME_Model$date, format = "%Y-%m-%d")
 StateList <- data.frame(state.name, state.abb)
